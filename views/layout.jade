@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    if (messages)
+      span= messages.success
+    block content

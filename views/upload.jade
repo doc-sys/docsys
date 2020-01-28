@@ -1,0 +1,7 @@
+extends layout
+
+block content
+  h1= title
+  form(action="/documents/", method="post", enctype="multipart/form-data")
+    input(type="file", name="documents" multiple)
+    button(type="submit") Submit
