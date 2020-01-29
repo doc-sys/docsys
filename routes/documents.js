@@ -19,12 +19,46 @@ var upload = multer({
 })
 
 router.route('/')
-  .post(upload.array('documents'), (req, res) => {
-    req.files.forEach(file => {
-      console.log(file)
+  .post(upload.array('documents'), async (req, res) => {
+    try {
+      req.files.forEach(async (file) => {
+        let uid = uuid();
+        let filetype = await ftype.fromBuffer(file.buffer)
+  
+        await fs.writeFile('./helper/files/' + uid + '.' + filetype.ext, file.buffer, () => {})
+  
+        let uploadedFile = new doc({
+          title: req.body.title,
+          created: req.body.dated,
+          fileId: uid,
+          //owner: req.session.userId | 'FELIX',
+          mime: filetype.mime,
+          ext: filetype.ext
     })
+  
+        //uploadedFile.save()
+  
+        let uploadPromise = s3.upload({
+          Bucket: 'docsys',
+          Key: uid,
+          Body: file.buffer,
+          ContentType: filetype.mime
+        }).promise()
+
+        uploadPromise.then(() => {
     req.flash('success', `Uploaded ${req.files.length} files`)
-    res.redirect('/')
+          res.status(200).redirect('/upload')      
+        }).catch((error) => {
+          req.flash('success', 'Couldn\'t upload files')
+          console.log(error)
+          res.status(501).redirect('/upload')
+        })
+      })
+    } catch (error) {
+      req.flash('success', 'Couldn\'t upload files')
+      console.log(error)
+      res.status(501).redirect('/upload')
+    }
   })
 
 router.route('/:id')
