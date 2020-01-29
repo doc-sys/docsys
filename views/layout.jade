@@ -6,4 +6,8 @@ html
   body
     if (messages)
       span= messages.success
+    h1= title
+    div
+      a(href="/") Home
+      a(href="/upload") Upload
     block content
