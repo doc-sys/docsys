@@ -9,8 +9,8 @@ var router = express.Router()
 var doc = require('../models/document')
 
 var s3 = new aws.S3({
-  accessKeyId: 'AKIAVAYX5NO5MZHI3ZH6',
-  secretAccessKey: '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',
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   sslEnabled: true
 })
 
@@ -50,13 +50,11 @@ router.route('/')
           res.status(200).redirect('/upload')      
         }).catch((error) => {
           req.flash('success', 'Couldn\'t upload files')
-          console.log(error)
           res.status(501).redirect('/upload')
         })
       })
     } catch (error) {
       req.flash('success', 'Couldn\'t upload files')
-      console.log(error)
       res.status(501).redirect('/upload')
     }
   })

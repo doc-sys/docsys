@@ -8,13 +8,15 @@ var session       = require('express-session')
 var flash         = require('express-flash')
 var mongoose      = require('mongoose')
 
+require('dotenv').config()
+
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
 var adminRouter = require('./routes/admin')
 var docRouter   = require('./routes/documents')
 
 var app = express()
-mongoose.connect('mongodb://localhost:27017/docsys', {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect(process.env.DB_PATH, {useNewUrlParser: true, useUnifiedTopology: true})
 mongoose.set('useCreateIndex', true)
 
 // view engine setup
