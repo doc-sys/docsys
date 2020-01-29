@@ -2,6 +2,8 @@ var express = require('express')
 var multer = require('multer')
 var aws = require('aws-sdk')
 var uuid = require('uuid/v4')
+var ftype = require('file-type')
+var fs = require('fs')
 var router = express.Router()
 
 var doc = require('../models/document')
