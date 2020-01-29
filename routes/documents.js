@@ -34,7 +34,7 @@ router.route('/')
           //owner: req.session.userId | 'FELIX',
           mime: filetype.mime,
           ext: filetype.ext
-    })
+        })
   
         //uploadedFile.save()
   
@@ -46,7 +46,7 @@ router.route('/')
         }).promise()
 
         uploadPromise.then(() => {
-    req.flash('success', `Uploaded ${req.files.length} files`)
+          req.flash('success', `Uploaded ${req.files.length} files`)
           res.status(200).redirect('/upload')      
         }).catch((error) => {
           req.flash('success', 'Couldn\'t upload files')
