@@ -34,6 +34,12 @@ let document = new mongoose.Schema({
         type: String,
         enum: ['PUBLIC', 'PRIVATE', 'INTERNAL'],
         default: 'PRIVATE'
+    },
+    mime: {
+        type: String
+    },
+    extension: {
+        type: String
     }
 })
 
