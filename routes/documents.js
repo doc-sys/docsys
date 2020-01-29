@@ -1,6 +1,6 @@
 var express = require('express')
 var multer = require('multer')
-var multers3 = require('multer-s3')
+var stream = require('stream')
 var aws = require('aws-sdk')
 var uuid = require('uuid/v4')
 var router = express.Router()
@@ -13,24 +13,14 @@ var s3 = new aws.S3({
   sslEnabled: true
 })
 
-var upload = multer({
-  storage: multers3({
-    s3: s3,
-    bucket: 'docsys',
-    metadata: (req, file, cb) => {
-      cb(null, { fileName: file.originalname})
-    },
-    key: (req, file, cb) => {
-      req.newName = uuid()
-      cb(null, req.newName)
-    }
-  })
+var upload = multer({ 
+  storage: multer.memoryStorage()
 })
 
 router.route('/')
   .post(upload.array('documents'), (req, res) => {
     req.files.forEach(file => {
-      let upload = null
+      console.log(file)
     })
     req.flash('success', `Uploaded ${req.files.length} files`)
     res.redirect('/')
