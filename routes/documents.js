@@ -1,6 +1,5 @@
 var express = require('express')
 var multer = require('multer')
-var stream = require('stream')
 var aws = require('aws-sdk')
 var uuid = require('uuid/v4')
 var router = express.Router()
