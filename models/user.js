@@ -41,23 +41,24 @@ user.virtual('isLocked').get(function() {
     return !!(this.lockUntil && this.lockUntil > Date.now())
 })
 
-user.pre('save', (next) => {
-    var user = this
+user.pre('save', function (next) {
+    var thisUser = this
 
-    if(!user.isModified('password')) return next()
+    if(!thisUser.isModified('password')) return next()
     bcrypt.genSalt(SALT_FACTOR, function(err, salt) {
         if(err) return next(err)
-        bcrypt.hash(user.password, salt, function(err, hash) {
+        bcrypt.hash(thisUser.password, salt, function(err, hash) {
             if(err) return next(err)
-            user.password = hash
+            thisUser.password = hash
             next()
         })
     })
 })
 
 user.methods.comparePassword = function(pwd) {
+    let userpwd = this.password
     return new Promise(function(resolve, reject) {
-        bcrypt.compare(pwd, this.password, function(err, isMatch) {
+        bcrypt.compare(pwd, userpwd, function(err, isMatch) {
             if(err) {
                 reject(err)
             } else {
