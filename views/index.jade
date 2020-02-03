@@ -1,4 +1,6 @@
 extends layout
 
 block content
-  p Welcome to #{title}
+  for doc in docs.own
+    p= doc.title
+    p= doc.fileId
