@@ -61,6 +61,10 @@ router.route('/')
     }
   })
 
+router.get('/upload', function(req, res) {
+  res.render('upload', { title: 'Upload' })
+})
+
 router.route('/:fileid')
   .get(async (req, res) => {
     let result = await doc.findOne({ fileId: req.params.fileid })
