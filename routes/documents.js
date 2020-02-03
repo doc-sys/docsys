@@ -37,27 +37,29 @@ router.route('/')
           title: req.body.title,
           created: req.body.dated,
           fileId: uid,
-          //owner: req.session.userId | 'FELIX',
+          owner: req.session.user._id,
           mime: filetype.mime,
           ext: filetype.ext
         })
   
-        //uploadedFile.save()
+        await uploadedFile.save()
   
-        let uploadPromise = s3.upload({
+        let upload = s3.upload({
           Bucket: 'docsys',
           Key: uid,
           Body: file.buffer,
           ContentType: filetype.mime
         }).promise()
 
-        uploadPromise.then(() => {
-          req.flash('success', `Uploaded ${req.files.length} files`)
-          res.status(200).redirect('/upload')      
-        }).catch((error) => {
-          req.flash('success', 'Couldn\'t upload files')
-          res.status(501).redirect('/upload')
-        })
+        upload.then(() => {return true;}).catch(e => {throw new Error(e)})
+      })
+      req.flash('success', `Uploaded ${req.files.length} files`)
+      res.status(200).redirect('/documents')      
+    } catch (error) {
+      req.flash('success', 'Couldn\'t upload files')
+      res.redirect('/documents')
+    }
+  })
       })
     } catch (error) {
       req.flash('success', 'Couldn\'t upload files')
