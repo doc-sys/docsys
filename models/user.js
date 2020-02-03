@@ -11,23 +11,23 @@ let user = new mongoose.Schema({
         required: true,
         index: {
             unique: true
-        },
-        password: {
-            type: String,
-            required: true
-        },
-        mail: {
-            type: String,
-            required: true
-        },
-        loginAttempts: {
-            type: Number,
-            required: true,
-            default: 0
-        },
-        lockUntil: {
-            type: Number
         }
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    mail: {
+        type: String,
+        required: true
+    },
+    loginAttempts: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    lockUntil: {
+        type: Number
     }
 })
 
