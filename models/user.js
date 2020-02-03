@@ -87,33 +87,35 @@ user.methods.incLoginAttempts = function() {
 }
 
 user.statics.getAuthenticated = async function(username, password) {
-    this.findOne({ username: username }, function(err, thisUser) {
-        if(err) return reject(err)
+    return new Promise((resolve, reject) => {
+        this.findOne({ username: username }, async function(err, thisUser) {
+            if(err) return reject(err)
 
-        if(!thisUser) return reject(reasons.NOT_FOUND)
+            if(!thisUser) return reject(reasons.NOT_FOUND)
 
-        if(thisUser.isLocked) {
-            await thisUser.incLoginAttempts
-            return reject(reasons.MAX_ATTEMPTS)
-        }
-
-        let compareResult = await thisUser.comparePassword(password)
-        if(compareResult) {
-            if(!thisUser.loginAttempts && !user.lockUntil) return resolve(thisUser)
-
-            var updates = {
-                $set: { loginAttempts: 0 },
-                $unset: { lockUntil: 1 }
+            if(thisUser.isLocked) {
+                await thisUser.incLoginAttempts
+                return reject(reasons.MAX_ATTEMPTS)
             }
 
-            return thisUser.update(updates, function(err) {
-                if(err) return reject(err)
-                return resolve(thisUser)
-            })
-        }
+            let compareResult = await thisUser.comparePassword(password)
+            if(compareResult) {
+                if(!thisUser.loginAttempts && !user.lockUntil) return resolve(thisUser)
 
-        await thisUser.incLoginAttempts
-        return reject(reasons.PASSWORD_INCORRECT)
+                var updates = {
+                    $set: { loginAttempts: 0 },
+                    $unset: { lockUntil: 1 }
+                }
+
+                return thisUser.update(updates, function(err) {
+                    if(err) return reject(err)
+                    return resolve(thisUser)
+                })
+            }
+
+            await thisUser.incLoginAttempts
+            return reject(reasons.PASSWORD_INCORRECT)
+        })
     })
 }
 
