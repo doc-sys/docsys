@@ -19,6 +19,12 @@ var upload = multer({
 })
 
 router.route('/')
+  .get(async(req, res) => {
+    let ownDocs = await doc.find({owner: req.session.user._id}).sort('-dated').select('title dated fileId locked')
+    let sharedDocs = await doc.find({sharedWith: req.session.user._id}).sort('-dated').select('title dated fileId locked owner')
+
+    res.render('index', {title: 'Dashboard', docs: {own: ownDocs, shared: sharedDocs}})
+  })
   .post(upload.array('documents'), async (req, res) => {
     try {
       req.files.forEach(async (file) => {
