@@ -24,5 +24,9 @@
     "multer-s3": "^2.9.0",
     "node-rake": "^1.0.1",
     "uuid": "^3.4.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "supertest": "^4.0.2"
   }
 }
