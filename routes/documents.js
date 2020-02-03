@@ -60,16 +60,31 @@ router.route('/')
       res.redirect('/documents')
     }
   })
+
+router.route('/:fileid')
+  .get(async (req, res) => {
+    let result = await doc.findOne({ fileId: req.params.fileid })
+    res.render('single_view', { title: result.title, doc: result })
+  })
+  .delete(async (req, res) => {
+    try {
+      let result = await doc.deleteOne({ fileId: req.params.fileid })
+      let deletedObject = s3.deleteObject({
+        Bucket: 'docsys',
+        Key: req.params.fileid
+      }).promise()
+  
+      deletedObject.then(() => {
+        req.flash('success', 'File deleted')
+        res.redirect('/documents')
+      }).catch((e) => {
+        throw new Error(e)
       })
     } catch (error) {
-      req.flash('success', 'Couldn\'t upload files')
-      res.status(501).redirect('/upload')
+      req.flash('success', 'Couldn\'t delete file')
+      res.redirect('/documents')
     }
   })
-
-router.route('/:id')
-  .get()
-  .delete()
   .put()
 
 module.exports = router
