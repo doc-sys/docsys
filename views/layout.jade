@@ -8,6 +8,10 @@ html
       span= messages.success
     h1= title
     div
-      a(href="/") Home
-      a(href="/upload") Upload
+      a(href="/documents") Home
+      a(href="/documents/upload") Upload
+      if isAuthenticated
+        a(href="/user/logout") Logout
+      else
+        a(href="/user/login") Login
     block content
