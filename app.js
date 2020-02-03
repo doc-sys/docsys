@@ -24,7 +24,7 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
 
 app.use(logger('dev'))
-app.use(session({ cookie: { maxAge: 6000 }, secret: 'testsec12', resave: false, saveUninitialized: true }))
+app.use(session({ cookie: { maxAge: 60000000 }, secret: 'testsec12', resave: true, saveUninitialized: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser('testsec12'))
