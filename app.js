@@ -31,10 +31,23 @@ app.use(cookieParser('testsec12'))
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(flash())
 
-app.use('/', indexRouter)
-app.use('/users', usersRouter)
+// Auth middleware
+const authRequired = async (req, res, next) => {
+  console.log(req.session)
+  if(req.session.isAuthenticated) {
+    res.locals.isAuthenticated = true
+    res.locals.user = req.session.user
+    next()  
+  } else {
+    req.flash('success', 'You need to be logged in')
+    res.redirect('/user/login')    
+  }
+}
+
+app.use('/user', usersRouter)
 app.use('/admin', adminRouter)
-app.use('/documents', docRouter)
+app.use('/documents', authRequired, docRouter)
+app.use('/', indexRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
