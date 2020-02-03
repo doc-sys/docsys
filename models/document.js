@@ -30,10 +30,13 @@ let document = new mongoose.Schema({
         ref: 'User',
         required: false
     },
-    access: {
-        type: String,
-        enum: ['PUBLIC', 'PRIVATE', 'INTERNAL'],
-        default: 'PRIVATE'
+    sharedWith: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: []
+    },
+    lockedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
     },
     mime: {
         type: String
@@ -43,7 +46,16 @@ let document = new mongoose.Schema({
     }
 })
 
-document.pre('save', async function(next) {
+document.virtual('locked')
+    .get(() => {
+        if(this.lockedBy == null) {
+            return false
+        } else {
+            return true
+        }
+    })
+
+/* document.pre('save', async function(next) {
     try {
         let ocr = await getOCR(this.fileId)
         let keywords = await getKeywords(ocr)
@@ -52,6 +64,6 @@ document.pre('save', async function(next) {
     }
     this.content = ocr
     this.keywords = keywords
-})
+}) */
 
 module.exports = mongoose.model('Doc', document)
