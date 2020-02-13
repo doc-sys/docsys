@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  .row
+    .column
+        h2= doc.title
+        p created #{moment(doc.dated).format('DD.MM.YYYY')} by #{doc.owner.username}
+  .row
+    .column.column-25
+      h3 Check-out
+      if (doc.locked)
+        p DOCUMENT IS LOCKED BY #{doc.lockedBy.username}
+      else
+        span Document can be checked out
+        a.button(href="/documents/checkout/"+doc.fileId) Download
+    .column.column-50
+      h3 Share
+      each user, index in doc.sharedWith
+        li= val.username
+    .column.column-25
+      h3 Keywords & Tags
