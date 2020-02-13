@@ -40,16 +40,16 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(flash())
 app.locals.moment = require('moment')
 
-// Auth middleware
+// auth middleware
 const authRequired = async (req, res, next) => {
-  console.log(req.session)
   if(req.session.isAuthenticated) {
     res.locals.isAuthenticated = true
     res.locals.user = req.session.user
     next()  
   } else {
     req.flash('warn', 'You need to be logged in')
-    res.redirect('/user/login')    
+    let url = encodeURIComponent(req.originalUrl)
+    res.redirect('/user/login?path=' + url)    
   }
 }
 
