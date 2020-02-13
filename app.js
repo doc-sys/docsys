@@ -7,6 +7,7 @@ var logger        = require('morgan')
 var session       = require('express-session')
 var flash         = require('express-flash')
 var mongoose      = require('mongoose')
+var fs            = require('fs')
 
 require('dotenv').config()
 
