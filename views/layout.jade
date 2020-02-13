@@ -2,29 +2,36 @@ doctype html
 html
   head
     title= title
-    link(rel='stylesheet', href='/stylesheets/grid.css')
-    link(rel='stylesheet', href='/stylesheets/screen.css')
+    link(rel="stylesheet", type="text/css", href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css")
+    block scripts
+      script(src="https://code.jquery.com/jquery-3.3.1.slim.min.js", integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=", crossorigin="anonymous")
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
-    if (messages)
+    .container
+      if (messages)
+        .row
+          .column
+            if (messages.success)
+              span#successMessage.messageBox= messages.success
+            if (messages.warn)
+              span#warnMessage.messageBox= messages.warn
       .row
-        .col
-          if (messages.success)
-            span#successMessage.messageBox= messages.success
-          if (messages.warn)
-            span#warnMessage.messageBox= messages.warn
-    .row
-      .col
-        if (title)
-          h1= title
-        else
-          h1 docsys
-    .row.navRow
-      .col
-        a.navEl(href="/documents") Home
-        a.navEl(href="/documents/upload") Upload
+        .column
+          if (title)
+            h1= title
+          else
+            h1 docsys
+      .row(style="margin-bottom: 20px;")
+        .column
+          if isAuthenticated
+            a.button(href="/documents") Home
+            a.button(href="/documents/upload", style="margin-left: 10px;") Upload
+            a.button(href="/user/logout", style="margin-left: 10px;") Logout
+          else
+            a.button.button-outline.disabled(href="/documents") Home
+            a.button.button-outline.disabled(href="/documents/upload", style="margin-left: 10px;") Upload
+            a.button(href="/user/login", style="margin-left: 10px;") Login
         if isAuthenticated
-          a.navEl(href="/user/logout") Logout
-        else
-          a.navEl(href="/user/login") Login
-    block content
+          .column
+            span.float-right Welcome #{user.username}
+      block content
