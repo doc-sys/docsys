@@ -2,13 +2,12 @@ extends layout
 
 block content
   .row
-    .col
-      form#loginForm(action="/user/login", method="post")
-        .row
-          .col
-            input.formEl(type="text", name="username", placeholder="Username")
-          .col
-            input.formEl(type="password", name="password", placeholder="Password")
-        .row
-          .col
-            button.formEl(type="submit") Submit
+    .column
+      form#loginForm(action="/user/login?path="+query, method="post")
+        fieldset
+          label(for="username") Username
+          input(type="text", name="username", placeholder="Username")
+          label(for="password") Password
+          input(type="password", name="password", placeholder="Password")
+          input.button-primary(type="submit", value="Login")
+    .column.column-50
