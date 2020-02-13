@@ -27,31 +27,31 @@ router.route('/')
   })
   .post(upload.array('documents'), async (req, res) => {
     try {
-      req.files.forEach(async (file) => {
-        let uid = uuid();
-        let filetype = await ftype.fromBuffer(file.buffer)
-  
-        await fs.writeFile('./helper/files/' + uid + '.' + filetype.ext, file.buffer, () => {})
-  
-        let uploadedFile = new doc({
-          title: req.body.title,
-          created: req.body.dated,
-          fileId: uid,
-          owner: req.session.user._id,
-          mime: filetype.mime,
-          ext: filetype.ext
-        })
-  
-        await uploadedFile.save()
-  
+      let uid = uuid()
+      let filetype = await ftype.fromBuffer(req.files[0].buffer)
+
+      let uploadedFile = new doc({
+        title: req.body.title,
+        created: req.body.dated,
+        fileId: uid,
+        owner: req.session.user._id,
+        mime: filetype.mime,
+        ext: filetype.ext
+      })
+
+      await uploadedFile.save()
+
+      req.files.forEach(async (file, index) => { 
+        await fs.writeFile('./helper/files/' + uid + '/'+ index + '.' + filetype.ext, file.buffer, () => {})
+
         let upload = s3.upload({
-          Bucket: 'docsys',
-          Key: uid,
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: uid + '/' + index,
           Body: file.buffer,
           ContentType: filetype.mime
         }).promise()
 
-        upload.then(() => {return true;}).catch(e => {throw new Error(e)})
+        upload.then(() => {return true}).catch(e => {throw new Error(e)})
       })
       req.flash('success', `Uploaded ${req.files.length} files`)
       res.status(200).redirect('/documents')      
