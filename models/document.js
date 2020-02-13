@@ -30,12 +30,14 @@ let document = new mongoose.Schema({
         ref: 'User',
         required: false
     },
-    sharedWith: {
-        type: [mongoose.Schema.Types.ObjectId],
+    sharedWith: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         default: []
-    },
+    }],
     lockedBy: {
         type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         default: null
     },
     mime: {
