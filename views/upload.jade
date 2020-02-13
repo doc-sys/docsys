@@ -1,8 +1,9 @@
 extends layout
 
 block content
-  form(action="/documents/", method="post", enctype="multipart/form-data")
-    input(type="file", name="documents" multiple)
-    input(type="text", name="title")
-    input(type="text", name="dated")
-    button(type="submit") Submit
+  .row
+    form(action="/documents/", method="post", enctype="multipart/form-data")
+      input(type="file", name="documents" multiple)
+      input(type="text", name="title")
+      input(type="text", name="dated")
+      button(type="submit") Submit

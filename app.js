@@ -39,7 +39,7 @@ const authRequired = async (req, res, next) => {
     res.locals.user = req.session.user
     next()  
   } else {
-    req.flash('success', 'You need to be logged in')
+    req.flash('warn', 'You need to be logged in')
     res.redirect('/user/login')    
   }
 }

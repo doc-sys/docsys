@@ -1,6 +1,17 @@
 extends layout
 
 block content
-  for doc in docs.own
-    p= doc.title
-    p= doc.fileId
+  .row
+    .col
+      if (docs && docs.own)
+        for doc in docs.own
+          p= doc.title
+          p= doc.fileId
+          form(action="/documents/"+doc.fileId ,method="delete")
+            button(type="submit") X
+
+    .col
+      if(docs && docs.shared)
+        for doc in docs.shared
+          p= doc.title
+          p= doc.fileId

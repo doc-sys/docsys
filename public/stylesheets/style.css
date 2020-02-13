@@ -3,6 +3,48 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-a {
-  color: #00B7FF;
+/* Message Boxes*/
+.messageBox {
+  padding: 15px 0;
+}
+
+#successMessage::before {
+  content: '\2705';
+  padding-right: 5px;
+}
+
+#warnMessage::before {
+  content: "\274C";
+  padding-right: 5px;
+}
+
+/* NavBar */
+a.navEl {
+  color: darkslategrey;
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 10px 10px 10px 0;
+  background-color: aqua;
+  text-decoration: none;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.navRow {
+  border-bottom: 1px solid grey;
+  margin-bottom: 20px;
+}
+
+/* Forms */
+.formEl {
+  display: inline-block;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+
+input.formEl {
+  border: 1px solid black;
+  margin: 5px 0;
 }

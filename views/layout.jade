@@ -2,16 +2,29 @@ doctype html
 html
   head
     title= title
+    link(rel='stylesheet', href='/stylesheets/grid.css')
+    link(rel='stylesheet', href='/stylesheets/screen.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
     if (messages)
-      span= messages.success
-    h1= title
-    div
-      a(href="/documents") Home
-      a(href="/documents/upload") Upload
-      if isAuthenticated
-        a(href="/user/logout") Logout
-      else
-        a(href="/user/login") Login
+      .row
+        .col
+          if (messages.success)
+            span#successMessage.messageBox= messages.success
+          if (messages.warn)
+            span#warnMessage.messageBox= messages.warn
+    .row
+      .col
+        if (title)
+          h1= title
+        else
+          h1 docsys
+    .row.navRow
+      .col
+        a.navEl(href="/documents") Home
+        a.navEl(href="/documents/upload") Upload
+        if isAuthenticated
+          a.navEl(href="/user/logout") Logout
+        else
+          a.navEl(href="/user/login") Login
     block content

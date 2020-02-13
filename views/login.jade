@@ -1,7 +1,14 @@
 extends layout
 
 block content
-  form(action="/user/login", method="post")
-    input(type="text", name="username", placeholder="Username")
-    input(type="password", name="password", placeholder="Password")
-    button(type="submit") Submit
+  .row
+    .col
+      form#loginForm(action="/user/login", method="post")
+        .row
+          .col
+            input.formEl(type="text", name="username", placeholder="Username")
+          .col
+            input.formEl(type="password", name="password", placeholder="Password")
+        .row
+          .col
+            button.formEl(type="submit") Submit
