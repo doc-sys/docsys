@@ -4,6 +4,7 @@ var aws = require('aws-sdk')
 var uuid = require('uuid/v4')
 var ftype = require('file-type')
 var fs = require('fs')
+var archiver = require('archiver')
 var router = express.Router()
 
 var doc = require('../models/document')
@@ -90,6 +91,47 @@ router.route('/delete/:fileid')
       res.redirect('/documents')
     }
   })
+
+router.route('/checkout/:fileid')
+  .get(async (req, res) => {
+    let file = await doc.findOne({ fileId: req.params.fileid }).populate('owner').populate('sharedWith')
+     //check permissions
+    if(!(req.session.user.username == file.owner.username || file.sharedWith.includes(req.session.user))) {
+      req.flash('warn', 'Not allowed to checkout')
+      res.redirect(req.originalUrl)
+    } else {
+      file.lockedBy = req.session.user
+      await file.save()
+
+      res.writeHead(200, {
+        'Content-Type': 'application/zip',
+        'Content-disposition': 'attachement; filename=files.zip'
+      })
+
+      let objects = await s3.listObjects({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Prefix: req.params.fileid
+      }).promise()
+
+      let zip = await archiver('zip')
+      
+      await objects.Contents.forEach(async ({ Key }, index) => {
+        let downloadFile = await s3.getObject({ Bucket: process.env.AWS_BUCKET_NAME, Key: Key}).promise()
+        await zip.append(downloadFile.Body, { name: file.fileId + '-' + index + '.' + file.extension})
+      })
+
+      await zip.pipe(res)
+
+      zip.finalize()
+    }
+  })
+
+router.route('/:fileid')
+  .get(async (req, res) => {
+    let result = await doc.findOne({ fileId: req.params.fileid }).populate('owner').populate('lockedBy').populate('sharedWith')
+    res.render('single_view', { title: 'Document View', doc: result })
+})
+
 // HELPER FUNC
 async function emptyS3Directory(bucket, dir) {
   const listParams = {
