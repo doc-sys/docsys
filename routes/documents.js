@@ -56,7 +56,8 @@ router.route('/')
       req.flash('success', `Uploaded ${req.files.length} files`)
       res.status(200).redirect('/documents')      
     } catch (error) {
-      req.flash('success', 'Couldn\'t upload files')
+      console.log(error)
+      req.flash('warn', 'Couldn\'t upload files')
       res.redirect('/documents')
     }
   })
@@ -65,27 +66,27 @@ router.get('/upload', function(req, res) {
   res.render('upload', { title: 'Upload' })
 })
 
-router.route('/:fileid')
+router.route('/delete/:fileid')
   .get(async (req, res) => {
-    let result = await doc.findOne({ fileId: req.params.fileid })
-    res.render('single_view', { title: result.title, doc: result })
-  })
-  .delete(async (req, res) => {
     try {
       let result = await doc.deleteOne({ fileId: req.params.fileid })
-      let deletedObject = s3.deleteObject({
-        Bucket: 'docsys',
+
+      await emptyS3Directory(process.env.AWS_BUCKET_NAME, req.params.fileid)
+
+      let deletePromise = s3.deleteObject({
+        Bucket: process.env.AWS_BUCKET_NAME,
         Key: req.params.fileid
       }).promise()
-  
-      deletedObject.then(() => {
-        req.flash('success', 'File deleted')
-        res.redirect('/documents')
-      }).catch((e) => {
-        throw new Error(e)
-      })
+
+      deletePromise
+        .then(() => {
+          req.flash('success', 'File(s) deleted')
+          res.redirect('/documents')
+        })
+      .catch(e => {throw e})
     } catch (error) {
-      req.flash('success', 'Couldn\'t delete file')
+      console.log(error)
+      req.flash('warn', 'Couldn\'t delete file(s)')
       res.redirect('/documents')
     }
   })
