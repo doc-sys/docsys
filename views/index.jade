@@ -2,15 +2,28 @@ extends layout
 
 block content
   .row
-    .col
-      if (docs && docs.own)
-        for doc in docs.own
-          p= doc.title
-          p= doc.fileId
-          form(action="/documents/"+doc.fileId ,method="delete")
-            button(type="submit") X
-
-    .col
+    .column
+      table
+        thead
+          tr
+            th Title
+            th ID
+            th Date
+            th
+        tbody
+          if (docs && docs.own)
+            for doc in docs.own
+              tr
+                th
+                  a(href="/documents/"+doc.fileId) #{doc.title}
+                th
+                  span= doc.fileId
+                th
+                  span= moment(doc.dated).format("DD.MM.YYYY")
+                th
+                  a.deleteButton(href="/documents/delete/"+doc.fileId) X
+  .row
+    .column
       if(docs && docs.shared)
         for doc in docs.shared
           p= doc.title
