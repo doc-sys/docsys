@@ -38,6 +38,7 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser('testsec12'))
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(flash())
+app.locals.moment = require('moment')
 
 // Auth middleware
 const authRequired = async (req, res, next) => {
