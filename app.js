@@ -18,12 +18,20 @@ var docRouter   = require('./routes/documents')
 var app = express()
 mongoose.connect(process.env.DB_PATH, {useNewUrlParser: true, useUnifiedTopology: true})
 mongoose.set('useCreateIndex', true)
+mongoose.connection.on('open', () => { console.log('Connected to MongoDB') })
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
 
-app.use(logger('dev'))
+// logging setup
+app.use(logger('[ :date[web] ] :method :url - :status in :response-time[3] ms', {
+  skip: function(req, res) { return res.statusCode < 400 }
+}))
+app.use(logger('[ :date[web] ] :method :url - :remote-addr', {
+  stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+}))
+
 app.use(session({ cookie: { maxAge: 60000000 }, secret: 'testsec12', resave: true, saveUninitialized: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
