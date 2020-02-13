@@ -1,3 +1,4 @@
 node_modules
 helper/files
 .env
+access.log
