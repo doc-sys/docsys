@@ -108,66 +108,62 @@ router.route('/delete/:fileid').get(async (req, res) => {
 	}
 })
 
-router.route('/checkout/:fileid').get(async (req, res) => {
-	let file = await doc
-		.findOne({ fileId: req.params.fileid })
-		.populate('owner')
-		.populate('sharedWith')
-	//check permissions
-	if (
-		!(
-			req.session.user.username == file.owner.username ||
-			file.sharedWith.includes(req.session.user)
-		)
-	) {
-		req.flash('warn', 'Not allowed to checkout')
-		res.redirect(req.originalUrl)
-	} else {
-		file.lockedBy = req.session.user
-		await file.save()
+router
+	.route('/checkout/:fileid')
+	.get(async (req, res) => {
+		let file = await doc
+			.findOne({ fileId: req.params.fileid })
+			.populate('owner')
+			.populate('sharedWith')
 
-		res.writeHead(200, {
-			'Content-Type': 'application/zip',
-			'Content-disposition': 'attachement; filename=files.zip',
-		})
+		//check permissions
+		if (
+			!(
+				req.session.user.username == file.owner.username ||
+				file.sharedWith.includes(req.session.user)
+			)
+		) {
+			req.flash('warn', 'Not allowed to checkout')
+			res.redirect(req.originalUrl)
+		} else {
+			file.lockedBy = req.session.user
+			file.locked = true
+			await file.save()
 
-		let objects = await s3
-			.listObjects({
-				Bucket: process.env.AWS_BUCKET_NAME,
-				Prefix: req.params.fileid,
+			res.writeHead(200, {
+				'Content-Type': 'application/zip',
+				'Content-disposition': 'attachement; filename=files.zip',
 			})
-			.promise()
 
-		const promises_list = objects.Contents.map(el => {
-			return el
-		})
-
-		await Promise.all(promises_list)
-
-		const promises_data = promises_list.map(el => {
-			return s3
-				.getObject({
+			let objects = await s3
+				.listObjects({
 					Bucket: process.env.AWS_BUCKET_NAME,
-					Key: el.Key,
+					Prefix: req.params.fileid,
 				})
 				.promise()
-		})
 
-		await Promise.all(promises_data)
+			let zip = await archiver('zip')
 
-		let zip = await archiver('zip')
+			await Promise.all(
+				objects.Contents.map(async ({ Key }, i) => {
+					let downloadedFile = await s3
+						.getObject({
+							Bucket: process.env.AWS_BUCKET_NAME,
+							Key: Key,
+						})
+						.promise()
 
-		promises_data.forEach((data, i) => {
-			zip.append(data.Body, {
-				name: file.fileId + '-' + i + '.' + file.extension,
-			})
-		})
+					await zip.append(downloadedFile.Body, {
+						name: file.fileId + '-' + i + '.' + file.extension,
+					})
+				})
+			)
 
-		await zip.pipe(res)
+			await zip.pipe(res)
 
-		zip.finalize()
-	}
-})
+			zip.finalize()
+		}
+	})
 
 router.route('/:fileid').get(async (req, res) => {
 	let result = await doc
