@@ -164,6 +164,29 @@ router
 			zip.finalize()
 		}
 	})
+	.post(upload.array('documents'), async (req, res) => {
+		try {
+			let file = await doc.findOne({ fileId: req.params.fileid })
+
+			await emptyS3Directory(process.env.AWS_BUCKET_NAME, req.params.fileid)
+
+			req.files.forEach((f, index) => {
+				uploadToS3Directory(
+					process.env.AWS_BUCKET_NAME,
+					file.fileId,
+					f.buffer,
+					file.mime,
+					index
+				)
+			})
+
+			req.flash('success', `Uploaded ${req.files.length} files`)
+			res.redirect(req.originalUrl)
+		} catch (error) {
+			req.flash('warn', 'Couldn`t upload files')
+			res.redirect(req.originalUrl)
+		}
+	})
 
 router.route('/:fileid').get(async (req, res) => {
 	let result = await doc
