@@ -59,22 +59,13 @@ router
 					() => {}
 				)
 
-				let upload = s3
-					.upload({
-						Bucket: process.env.AWS_BUCKET_NAME,
-						Key: uid + '/' + index,
-						Body: file.buffer,
-						ContentType: filetype.mime,
-					})
-					.promise()
-
-				upload
-					.then(() => {
-						return true
-					})
-					.catch(e => {
-						throw new Error(e)
-					})
+				await uploadToS3Directory(
+					process.env.AWS_BUCKET_NAME,
+					uid,
+					file.buffer,
+					filetype.mime,
+					index
+				)
 			})
 			req.flash('success', `Uploaded ${req.files.length} files`)
 			res.status(200).redirect('/documents')
