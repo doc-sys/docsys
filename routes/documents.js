@@ -198,6 +198,12 @@ router.route('/:fileid').get(async (req, res) => {
 })
 
 // HELPER FUNC
+
+/**
+ * Empties the directory on the given AWS S3 Bucket.
+ * @param {String} bucket
+ * @param {String} dir
+ */
 async function emptyS3Directory(bucket, dir) {
 	const listParams = {
 		Bucket: bucket,
@@ -220,6 +226,33 @@ async function emptyS3Directory(bucket, dir) {
 	await s3.deleteObjects(deleteParams).promise()
 
 	if (listedObjects.IsTruncated) await emptyS3Directory(bucket, dir)
+}
+
+/**
+ * Uploads all files in @param files to the Bucket and into the directory
+ * @param {String} bucket
+ * @param {String} dir
+ * @param {Buffer} files
+ * @param {String} mime
+ * @param {Number} index
+ */
+async function uploadToS3Directory(bucket, dir, data, mime, index) {
+	let upload = s3
+		.upload({
+			Bucket: bucket,
+			Key: dir + '/' + index,
+			Body: data,
+			ContentType: mime,
+		})
+		.promise()
+
+	upload
+		.then(() => {
+			return true
+		})
+		.catch(e => {
+			throw new Error(e)
+		})
 }
 
 module.exports = router
