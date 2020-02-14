@@ -82,7 +82,7 @@ router.get('/upload', function(req, res) {
 
 router.route('/delete/:fileid').get(async (req, res) => {
 	try {
-		let result = await doc.deleteOne({ fileId: req.params.fileid })
+		await doc.deleteOne({ fileId: req.params.fileid })
 
 		await emptyS3Directory(process.env.AWS_BUCKET_NAME, req.params.fileid)
 
