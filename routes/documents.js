@@ -47,7 +47,7 @@ router
 				fileId: uid,
 				owner: req.session.user._id,
 				mime: filetype.mime,
-				ext: filetype.ext,
+				extension: filetype.ext,
 			})
 
 			await uploadedFile.save()
