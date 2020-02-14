@@ -9,13 +9,22 @@ block content
     .column.column-25
       h3 Check-out
       if (doc.locked)
-        p DOCUMENT IS LOCKED BY #{doc.lockedBy.username}
+        p Document is locked by #{doc.lockedBy.username}
+        if (doc.lockedBy.username == user.username)
+          form(action="/documents/checkout/"+doc.fileId, method="post", enctype="multipart/form-data")
+            label(for="documents") Return document
+            input(type="file", name="documents" multiple)
+            button(type="submit") Submit
       else
         span Document can be checked out
         a.button(href="/documents/checkout/"+doc.fileId) Download
     .column.column-50
       h3 Share
-      each user, index in doc.sharedWith
-        li= val.username
+      if (doc.sharedWith.length == 0)
+        p Not shared yet
+      else
+        each user, index in doc.sharedWith
+          li= val.username
     .column.column-25
       h3 Keywords & Tags
+      p= doc.extension
