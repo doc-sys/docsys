@@ -33,5 +33,7 @@ html
             a.button(href="/user/login", style="margin-left: 10px;") Login
         if isAuthenticated
           .column
-            span.float-right Welcome #{user.username}
+            span.float-right Welcome 
+              a(href="/settings")
+                img(alt="Embedded Image" src="data:image/png;base64,"+user.avatar)
       block content

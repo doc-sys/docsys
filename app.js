@@ -14,6 +14,7 @@ var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
 var adminRouter = require('./routes/admin')
 var docRouter = require('./routes/documents')
+var settingsRouter = require('./routes/settings')
 
 var app = express()
 try {
@@ -80,6 +81,7 @@ const authRequired = async (req, res, next) => {
 app.use('/user', usersRouter)
 app.use('/admin', adminRouter)
 app.use('/documents', authRequired, docRouter)
+app.use('/settings', authRequired, settingsRouter)
 app.use('/', indexRouter)
 
 // catch 404 and forward to error handler

@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  .row
+    .column
+      form(action="/settings/", method="post", enctype="multipart/form-data")
+        label(for="documents") Avatar
+        input(type="file", name="avatar")
+        button.float-right(type="submit") Submit
+    .column.column-50
