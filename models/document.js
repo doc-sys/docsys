@@ -50,6 +50,21 @@ let document = new mongoose.Schema({
 	extension: {
 		type: String,
 	},
+	log: [{
+		timestamp: {
+			type: Date,
+			default: Date.now()
+		},
+		user: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+			required: true
+		},
+		message: {
+			type: String,
+			required: true
+		}
+	}]
 })
 
 /* document.pre('save', async function(next) {
