@@ -15,8 +15,14 @@ let user = new mongoose.Schema({
 		},
 	},
 	settings: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Setting',
+		language: {
+			type: String,
+			enum: ['en', 'de'],
+			default: 'en',
+		},
+		displayName: {
+			type: String
+		}
 	},
 	avatar: {
 		type: String,
