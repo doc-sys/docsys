@@ -6,5 +6,9 @@ block content
       form(action="/settings/", method="post", enctype="multipart/form-data")
         label(for="documents") Avatar
         input(type="file", name="avatar")
+        label(for="language") Language
+        select#(name="language") 
+          option(value="eng" selected=settings.language == "eng" ? true : false) English
+          option(value="de" selected=settings.language == "de" ? true : false) German
         button.float-right(type="submit") Submit
     .column.column-50
