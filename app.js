@@ -87,6 +87,14 @@ const authRequired = async (req, res, next) => {
 	}
 }
 
+app.use((req, res, next) => {
+	if(req.session.user) {
+		res.setLocale(req.session.user.settings.language)
+	}
+
+	next()
+})
+
 app.use('/user', usersRouter)
 app.use('/admin', adminRouter)
 app.use('/documents', authRequired, docRouter)
