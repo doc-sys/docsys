@@ -26,7 +26,7 @@ router
 				res.redirect('/documents')
 			}
 		} catch (error) {
-			req.flash('success', `Following error occured - ${error}`)
+			req.flash('warn', `Following error occured - ${error}`)
 			res.redirect('/user/login?path=' + req.query.path)
 		}
 	})
@@ -56,6 +56,7 @@ router
 			mail: req.body.email,
 			settings: {
 				language: 'en',
+				displayName: req.body.name,
 			},
 		})
 
