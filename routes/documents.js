@@ -8,6 +8,7 @@ var archiver = require('archiver')
 var router = express.Router()
 
 var doc = require('../models/document')
+var user = require('../models/user')
 
 var s3 = new aws.S3({
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -29,6 +30,7 @@ router
 		let sharedDocs = await doc
 			.find({ sharedWith: req.session.user._id })
 			.sort('-dated')
+			.populate('owner')
 			.select('title dated fileId locked owner')
 
 		res.render('index', {
@@ -64,6 +66,16 @@ router
 				owner: req.session.user._id,
 				mime: filetype.mime,
 				extension: filetype.ext,
+				log: [],
+			})
+
+			uploadedFile.log.push({
+				message: 'Document created',
+				user: req.session.user._id,
+			})
+			uploadedFile.log.push({
+				message: req.body.comment,
+				user: req.session.user._id,
 			})
 
 			await uploadedFile.save()
@@ -189,12 +201,30 @@ router
 		}
 	})
 
+router.route('/share/:fileid').post(async (req, res) => {
+	let fileid = req.params.fileid
+	let document = await doc.findOne({ fileId: fileid }).populate('owner')
+	let sharedUser = await user.findOne({ username: req.body.shareUsername })
+
+	if (req.session.user.username == document.owner.username) {
+		document.sharedWith.push(sharedUser._id)
+		await document.save()
+	} else if (req.session.user.username == req.body.shareUsername) {
+		req.flash('warn', "Can't share with yourself")
+	} else {
+		req.flash('warn', 'You are not the owner')
+	}
+
+	res.redirect('/documents/' + fileid)
+})
+
 router.route('/:fileid').get(async (req, res) => {
 	let result = await doc
 		.findOne({ fileId: req.params.fileid })
 		.populate('owner')
 		.populate('lockedBy')
 		.populate('sharedWith')
+		.populate('log.user')
 	res.render('single_view', { title: 'Document View', doc: result })
 })
 
