@@ -1,26 +1,46 @@
 /* Message Boxes*/
 .messageBox {
-  padding: 15px 0;
+	padding: 15px 0;
 }
 
 #successMessage::before {
-  content: '\2705';
-  padding-right: 5px;
+	content: '\2705';
+	padding-right: 5px;
 }
 
 #warnMessage::before {
-  content: "\274C";
-  padding-right: 5px;
+	content: '\274C';
+	padding-right: 5px;
 }
 
 a.disabled {
-  pointer-events: none;
+	pointer-events: none;
+}
+
+th {
+	width: 25%;
 }
 
 tbody th {
-  font-weight: 300;
+	font-weight: 300;
 }
 
 tbody th a.deleteButton {
-  font-weight: 700;
+	font-weight: 700;
+}
+
+.croppedImage {
+	display: inline-block;
+	width: 30px;
+	height: 30px;
+	position: relative;
+	overflow: hidden;
+	border-radius: 50%;
+}
+
+.croppedImage img {
+	display: inline;
+	margin: 0 auto;
+	height: 100%;
+	width: auto;
 }
