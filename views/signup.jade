@@ -3,7 +3,7 @@ extends layout
 block content
   .row
     form(action="/user/signup", method="post")
-      input(type="text", name="username", placeholder="Username")
-      input(type="text", name="email", placeholder="Mail")
-      input(type="password", name="password", placeholder="Password")
-      button(type="submit") Submit
+      input(type="text", name="username", placeholder=__('Username'))
+      input(type="text", name="email", placeholder=__("Mail"))
+      input(type="password", name="password", placeholder=__("Password"))
+      button(type="submit")= __('Submit')

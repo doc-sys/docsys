@@ -6,6 +6,7 @@ var logger = require('morgan')
 var session = require('express-session')
 var flash = require('express-flash')
 var mongoose = require('mongoose')
+var i18n = require('i18n')
 var fs = require('fs')
 
 require('dotenv').config()
@@ -15,6 +16,7 @@ var usersRouter = require('./routes/users')
 var adminRouter = require('./routes/admin')
 var docRouter = require('./routes/documents')
 var settingsRouter = require('./routes/settings')
+var helperRouter = require('./routes/helper')
 
 var app = express()
 try {
@@ -28,6 +30,12 @@ try {
 mongoose.set('useCreateIndex', true)
 mongoose.connection.on('open', () => {
 	console.log('Connected to MongoDB')
+})
+
+i18n.configure({
+	locales: ['en', 'de'],
+	directory: __dirname + '/locales',
+	defaultLocale: 'en',
 })
 
 // view engine setup
@@ -58,6 +66,7 @@ app.use(
 		saveUninitialized: true,
 	})
 )
+app.use(i18n.init)
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser('testsec12'))
@@ -82,6 +91,7 @@ app.use('/user', usersRouter)
 app.use('/admin', adminRouter)
 app.use('/documents', authRequired, docRouter)
 app.use('/settings', authRequired, settingsRouter)
+app.use('/functions', authRequired, helperRouter)
 app.use('/', indexRouter)
 
 // catch 404 and forward to error handler

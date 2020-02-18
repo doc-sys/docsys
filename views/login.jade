@@ -5,9 +5,10 @@ block content
     .column
       form#loginForm(action="/user/login?path="+query, method="post")
         fieldset
-          label(for="username") Username
-          input(type="text", name="username", placeholder="Username")
-          label(for="password") Password
-          input(type="password", name="password", placeholder="Password")
-          input.button-primary(type="submit", value="Login")
+          label(for="username")= __('Username')
+          input(type="text", name="username", placeholder=__("Username"))
+          label(for="password")= __('Password')
+          input(type="password", name="password", placeholder=__("Password"))
+          a(href="/user/signup", style="display: block; font-size: 10px; margin-bottom: 10px;")= __('No Account? Sign up')
+          input.button-primary(type="submit", value=__("Login"))
     .column.column-50

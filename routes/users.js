@@ -12,8 +12,14 @@ router
 				req.body.username,
 				req.body.password
 			)
+
+			result.password = ''
+
 			req.session.user = result
 			req.session.isAuthenticated = true
+
+			res.setLocale(result.settings.language)
+
 			if (typeof req.query.path != 'undefined') {
 				res.redirect(decodeURIComponent(req.query.path))
 			} else {
@@ -44,17 +50,13 @@ router
 		}
 	})
 	.post(async (req, res) => {
-		let newSetting = new setting({
-			language: 'eng',
-		})
-
-		await newSetting.save()
-
 		let newUser = new user({
 			username: req.body.username,
 			password: req.body.password,
 			mail: req.body.email,
-			settings: newSetting._id,
+			settings: {
+				language: 'en',
+			},
 		})
 
 		await newUser.save()

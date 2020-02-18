@@ -1,10 +1,11 @@
 doctype html
 html
   head
-    title= title
+    title= title ? title : "docsys"
     link(rel="stylesheet", type="text/css", href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css")
+    link(rel="stylesheet", href="/stylesheets/easy-autocomplete.min.css")
     block scripts
-      script(src="https://code.jquery.com/jquery-3.3.1.slim.min.js", integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=", crossorigin="anonymous")
+      script(src="https://code.jquery.com/jquery-3.3.1.min.js", crossorigin="anonymous")
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
     .container
@@ -24,16 +25,16 @@ html
       .row(style="margin-bottom: 20px;")
         .column
           if isAuthenticated
-            a.button(href="/documents") Home
-            a.button(href="/documents/upload", style="margin-left: 10px;") Upload
-            a.button(href="/user/logout", style="margin-left: 10px;") Logout
+            a.button(href="/documents")= __('Home')
+            a.button(href="/documents/upload", style="margin-left: 10px;")= __('Upload')
+            a.button(href="/user/logout", style="margin-left: 10px;")= __('Logout')
           else
-            a.button.button-outline.disabled(href="/documents") Home
-            a.button.button-outline.disabled(href="/documents/upload", style="margin-left: 10px;") Upload
-            a.button(href="/user/login", style="margin-left: 10px;") Login
+            a.button.button-outline.disabled(href="/documents")= __('Home')
+            a.button.button-outline.disabled(href="/documents/upload", style="margin-left: 10px;")= __('Upload')
+            a.button(href="/user/login", style="margin-left: 10px;")= __('Login')
         if isAuthenticated
           .column
-            span.float-right Welcome 
+            span.float-right= __('Welcome') 
               a(href="/settings")
-                img(alt="Embedded Image" src="data:image/png;base64,"+user.avatar)
+                span= ' ' + user.settings.displayName || user.username
       block content

@@ -4,11 +4,13 @@ block content
   .row
     .column
       form(action="/settings/", method="post", enctype="multipart/form-data")
-        label(for="documents") Avatar
+        label(for="documents")= __('Avatar')
         input(type="file", name="avatar")
-        label(for="language") Language
-        select#(name="language") 
-          option(value="eng" selected=settings.language == "eng" ? true : false) English
-          option(value="de" selected=settings.language == "de" ? true : false) German
-        button.float-right(type="submit") Submit
+        label(for="displayName")= __('Full Name')
+        input(type="text", name="displayName", value=user.settings.displayName)
+        label(for="language")= __('Language')
+        select(name="language") 
+          option(value="en" selected=user.settings.language == "eng" ? true : false)= __('English')
+          option(value="de" selected=user.settings.language == "de" ? true : false)= __('German')
+        button.float-right(type="submit")= __('Submit')
     .column.column-50

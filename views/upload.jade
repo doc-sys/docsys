@@ -4,11 +4,11 @@ block content
   .row
     .column
       form(action="/documents/", method="post", enctype="multipart/form-data")
-        label(for="title") Title
+        label(for="title")= __('Title')
         input(type="text", name="title")
-        label(for="dated") Date recieved
+        label(for="dated")= __('Date recieved')
         input(type="date", name="dated")
-        label(for="documents") Documents to upload
+        label(for="documents")= __('Documents to upload')
         input(type="file", name="documents" multiple)
-        button.float-right(type="submit") Submit
+        button.float-right(type="submit")= __('Submit')
     .column.column-50

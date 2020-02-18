@@ -4,27 +4,34 @@ block content
   .row
     .column
         h2= doc.title
-        p created #{moment(doc.dated).format('DD.MM.YYYY')} by #{doc.owner.username}
+        p= __('created {{date}} by {{user}}', {date: moment(doc.dated).format('DD.MM.YYYY'), user: doc.owner.username})
   .row
     .column.column-25
       h3 Check-out
       if (doc.locked)
-        p Document is locked by #{doc.lockedBy.username}
+        p= __('Document is locked by {{lockUser}}', {lockUser: doc.lockedBy.username})
         if (doc.lockedBy.username == user.username)
           form(action="/documents/checkout/"+doc.fileId, method="post", enctype="multipart/form-data")
-            label(for="documents") Return document
+            label(for="documents")= __('Return document')
             input(type="file", name="documents" multiple)
-            button(type="submit") Submit
+            button(type="submit")= __('Submit')
       else
-        span Document can be checked out
-        a.button(href="/documents/checkout/"+doc.fileId) Download
+        span= __('Document can be checked out')
+        a.button(href="/documents/checkout/"+doc.fileId)= __('Download')
     .column.column-50
-      h3 Share
+      h3= __('Share')
+      form(action="/document/share/" + doc.fileId, method="post")
+        input#shareAutoSug(type="text")
+        input#hiddenUsername(type="hidden", name="shareUsername")
+        button(type="submit")= __('Share')
       if (doc.sharedWith.length == 0)
-        p Not shared yet
+        p= __('Not shared yet')
       else
         each user, index in doc.sharedWith
           li= val.username
     .column.column-25
-      h3 Keywords & Tags
+      h3= __('Keywords & Tags')
       p= doc.extension
+
+  script(src="/js/jquery.easy-autocomplete.js")
+  script(src="/js/index.js")

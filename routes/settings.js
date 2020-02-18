@@ -15,7 +15,7 @@ router
 		res.render('settings', { title: 'Settings' })
 	})
 	.post(upload.single('avatar'), async (req, res) => {
-		let thisUser = user.findOne({ _id: req.session.user._id })
+		let thisUser = await user.findOne({ _id: req.session.user._id })
 
 		if (typeof req.file != 'undefined') {
 			let avatar = await sharp(req.file.buffer)
@@ -26,7 +26,13 @@ router
 		}
 
 		thisUser.settings.language = req.body.language
+		thisUser.settings.displayName =
+			req.body.displayName || thisUser.settings.displayName
 		await thisUser.save()
+
+		req.setLocale(thisUser.settings.language)
+
+		req.session.user = thisUser
 
 		res.redirect('/settings')
 	})
