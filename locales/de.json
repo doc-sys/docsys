@@ -24,5 +24,16 @@
 	"Share": "Share",
 	"Not shared yet": "Not shared yet",
 	"Keywords & Tags": "Keywords & Tags",
-	"Mail": "Mail"
+	"Mail": "Mail",
+	"Name": "Name",
+	"Shared Documents": "Shared Documents",
+	"Owner": "Owner",
+	"Shared With": "Shared With",
+	"User Avatar": "User Avatar",
+	"Comment": "Comment",
+	"Your documents": "Your documents",
+	"Shared with you": "Shared with you",
+	"{{user}} at {{time}}": "{{user}} at {{time}}",
+	"Logs": "Logs",
+	"Add comment": "Add comment"
 }
