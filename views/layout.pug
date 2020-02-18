@@ -37,4 +37,6 @@ html
             span.float-right= __('Welcome') 
               a(href="/settings")
                 span= ' ' + user.settings.displayName || user.username
+                .croppedImage
+                  img(src="data:image/jpeg;base64,"+user.avatar, alt=__('User Avatar'))
       block content

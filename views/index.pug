@@ -1,0 +1,47 @@
+extends layout
+
+block content
+  .row
+    .column
+      h3= __('Your documents')
+      table
+        thead
+          tr
+            th= __('Title')
+            th= __('ID')
+            th= __('Date')
+            th
+        tbody
+          if (docs && docs.own)
+            for doc in docs.own
+              tr
+                th
+                  a(href="/documents/"+doc.fileId) #{doc.title}
+                th
+                  span= doc.fileId
+                th
+                  span= moment(doc.dated).format("DD.MM.YYYY")
+                th
+                  a.deleteButton(href="/documents/delete/"+doc.fileId) X
+  .row
+    .column
+      h3= __('Shared with you')
+      table
+          thead
+            tr
+              th= __('Title')
+              th= __('ID')
+              th= __('Date')
+              th= __('Owner')
+          tbody
+            if (docs && docs.shared)
+              for doc in docs.shared
+                tr
+                  th
+                    a(href="/documents/"+doc.fileId) #{doc.title}
+                  th
+                    span= doc.fileId
+                  th
+                    span= moment(doc.dated).format("DD.MM.YYYY")
+                  th
+                    span= doc.owner.settings.displayName
