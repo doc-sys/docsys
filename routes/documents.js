@@ -41,17 +41,6 @@ router
 			let uid = uuid()
 			let filetype = await ftype.fromBuffer(req.files[0].buffer)
 
-			let uploadedFile = new doc({
-				title: req.body.title,
-				created: req.body.dated,
-				fileId: uid,
-				owner: req.session.user._id,
-				mime: filetype.mime,
-				extension: filetype.ext,
-			})
-
-			await uploadedFile.save()
-
 			req.files.forEach(async (file, index) => {
 				await fs.writeFile(
 					'./helper/files/' + uid + '/' + index + '.' + filetype.ext,
@@ -67,6 +56,18 @@ router
 					index
 				)
 			})
+
+			let uploadedFile = new doc({
+				title: req.body.title,
+				created: req.body.dated,
+				fileId: uid,
+				owner: req.session.user._id,
+				mime: filetype.mime,
+				extension: filetype.ext,
+			})
+
+			await uploadedFile.save()
+
 			req.flash('success', `Uploaded ${req.files.length} files`)
 			res.status(200).redirect('/documents')
 		} catch (error) {
