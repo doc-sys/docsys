@@ -44,10 +44,17 @@ router
 		}
 	})
 	.post(async (req, res) => {
+		let newSetting = new setting({
+			language: 'eng',
+		})
+
+		await newSetting.save()
+
 		let newUser = new user({
 			username: req.body.username,
 			password: req.body.password,
 			mail: req.body.email,
+			settings: newSetting._id,
 		})
 
 		await newUser.save()
