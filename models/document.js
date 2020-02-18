@@ -1,6 +1,4 @@
 let mongoose = require('mongoose')
-let { getOCR } = require('../helper/ocr')
-let { getKeywords } = require('../helper/keywords')
 
 let document = new mongoose.Schema({
 	title: {
@@ -64,5 +62,10 @@ let document = new mongoose.Schema({
     this.content = ocr
     this.keywords = keywords
 }) */
+
+document.pre('save', async function(next) {
+	console.log('DOING OCR ETC')
+	next()
+})
 
 module.exports = mongoose.model('Doc', document)
