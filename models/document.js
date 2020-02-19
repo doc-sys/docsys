@@ -50,37 +50,27 @@ let document = new mongoose.Schema({
 	extension: {
 		type: String,
 	},
-	log: [{
-		timestamp: {
-			type: Date,
-			default: Date.now()
+	ocrReady: {
+		type: Boolean,
+		default: false,
+	},
+	log: [
+		{
+			timestamp: {
+				type: Date,
+				default: Date.now(),
+			},
+			user: {
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'User',
+				required: true,
+			},
+			message: {
+				type: String,
+				required: true,
+			},
 		},
-		user: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'User',
-			required: true
-		},
-		message: {
-			type: String,
-			required: true
-		}
-	}]
-})
-
-/* document.pre('save', async function(next) {
-    try {
-        let ocr = await getOCR(this.fileId)
-        let keywords = await getKeywords(ocr)
-    } catch (error) {
-        next(error)
-    }
-    this.content = ocr
-    this.keywords = keywords
-}) */
-
-document.pre('save', async function(next) {
-	console.log('DOING OCR ETC')
-	next()
+	],
 })
 
 module.exports = mongoose.model('Doc', document)

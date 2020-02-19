@@ -3,12 +3,17 @@ var multer = require('multer')
 var aws = require('aws-sdk')
 var uuid = require('uuid/v4')
 var ftype = require('file-type')
-var fs = require('fs')
+var fs = require('fs').promises
 var archiver = require('archiver')
+const Queue = require('bee-queue')
+const convertQueue = new Queue('pdfconversion', { activateDelayedJobs: true })
+const ocrQueue = new Queue('ocr')
 var router = express.Router()
 
 var doc = require('../models/document')
 var user = require('../models/user')
+
+const ALLOWED_FILETYPES = ['pdf', 'jpg', 'jpeg', 'png', 'tiff']
 
 var s3 = new aws.S3({
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -43,12 +48,37 @@ router
 			let uid = uuid()
 			let filetype = await ftype.fromBuffer(req.files[0].buffer)
 
+			if (!ALLOWED_FILETYPES.includes(filetype.ext)) {
+				throw new Error('Filetype not supported')
+			}
+
 			req.files.forEach(async (file, index) => {
-				await fs.writeFile(
-					'./helper/files/' + uid + '/' + index + '.' + filetype.ext,
-					file.buffer,
-					() => {}
+				let processUID = uuid()
+				let filename = processUID + '.' + filetype.ext
+
+				let writtenFile = fs.writeFile(
+					'./queues/files/' + filename,
+					file.buffer
 				)
+				writtenFile.then(async () => {
+					if (filetype.ext == 'pdf') {
+						await convertQueue
+							.createJob({
+								filename: filename,
+								parentUID: uid,
+							})
+							.delayUntil(Date.now() + 3000)
+							.save()
+					} else {
+						await ocrQueue
+							.createJob({
+								filename: filename,
+								parentUID: uid,
+							})
+							.delayUntil(Date.now() + 3000)
+							.save()
+					}
+				})
 
 				await uploadToS3Directory(
 					process.env.AWS_BUCKET_NAME,
@@ -83,7 +113,6 @@ router
 			req.flash('success', `Uploaded ${req.files.length} files`)
 			res.status(200).redirect('/documents')
 		} catch (error) {
-			console.log(error)
 			req.flash('warn', "Couldn't upload files")
 			res.redirect('/documents')
 		}
@@ -115,7 +144,6 @@ router.route('/delete/:fileid').get(async (req, res) => {
 				throw e
 			})
 	} catch (error) {
-		console.log(error)
 		req.flash('warn', "Couldn't delete file(s)")
 		res.redirect('/documents')
 	}
