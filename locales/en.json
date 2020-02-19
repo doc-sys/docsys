@@ -1,1 +1,17 @@
-{}
+{
+	"Home": "Home",
+	"Upload": "Upload",
+	"Logout": "Logout",
+	"Welcome": "Welcome",
+	"User Avatar": "User Avatar",
+	"Your documents": "Your documents",
+	"Title": "Title",
+	"ID": "ID",
+	"Date": "Date",
+	"Shared with you": "Shared with you",
+	"Owner": "Owner",
+	"Date recieved": "Date recieved",
+	"Documents to upload": "Documents to upload",
+	"Comment": "Comment",
+	"Submit": "Submit"
+}
