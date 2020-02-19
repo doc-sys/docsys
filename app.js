@@ -29,6 +29,7 @@ try {
 }
 mongoose.set('useCreateIndex', true)
 mongoose.connection.on('open', () => {
+	// eslint-disable-next-line no-console
 	console.log('Connected to MongoDB')
 })
 
@@ -88,7 +89,7 @@ const authRequired = async (req, res, next) => {
 }
 
 app.use((req, res, next) => {
-	if(req.session.user) {
+	if (req.session.user) {
 		res.setLocale(req.session.user.settings.language)
 	}
 
