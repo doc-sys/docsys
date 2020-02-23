@@ -28,6 +28,7 @@
     "multer-s3": "^2.9.0",
     "node-rake": "^1.0.1",
     "node-tesseract": "^0.2.7",
+    "nodemailer": "^6.4.3",
     "pdf-image": "^2.0.0",
     "pdf-poppler": "^0.2.1",
     "pug": "^2.0.4",
