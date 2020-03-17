@@ -6,8 +6,13 @@ var ftype = require('file-type')
 var fs = require('fs').promises
 var archiver = require('archiver')
 const Queue = require('bee-queue')
-const convertQueue = new Queue('pdfconversion', { activateDelayedJobs: true })
-const ocrQueue = new Queue('ocr')
+
+const convertQueue = new Queue('pdfconversion', {
+	activateDelayedJobs: true,
+	redis: { url: process.env.REDIS_URL },
+})
+const ocrQueue = new Queue('ocr', { redis: process.env.REDIS_URL })
+
 var router = express.Router()
 
 var doc = require('../models/document')
@@ -29,19 +34,18 @@ router
 	.route('/')
 	.get(async (req, res) => {
 		let ownDocs = await doc
-			.find({ owner: req.session.user._id })
+			.find({ owner: req.user._id })
 			.sort('-dated')
 			.select('title dated fileId locked')
 		let sharedDocs = await doc
-			.find({ sharedWith: req.session.user._id })
+			.find({ sharedWith: req.user._id })
 			.sort('-dated')
 			.populate('owner')
 			.select('title dated fileId locked owner')
 
-		res.render('index', {
-			title: 'Dashboard',
-			docs: { own: ownDocs, shared: sharedDocs },
-		})
+		res
+			.status(200)
+			.json({ payload: { ownDocs: ownDocs, sharedDocs: sharedDocs } })
 	})
 	.post(upload.array('documents'), async (req, res) => {
 		try {
@@ -110,44 +114,15 @@ router
 
 			await uploadedFile.save()
 
-			req.flash('success', `Uploaded ${req.files.length} files`)
-			res.status(200).redirect('/documents')
+			res
+				.status(200)
+				.json({ payload: { message: `Uploaded ${req.files.length} files` } })
 		} catch (error) {
-			req.flash('warn', "Couldn't upload files")
-			res.redirect('/documents')
+			res.status(500).json({
+				payload: { message: error },
+			})
 		}
 	})
-
-router.get('/upload', function(req, res) {
-	res.render('upload', { title: 'Upload' })
-})
-
-router.route('/delete/:fileid').get(async (req, res) => {
-	try {
-		await doc.deleteOne({ fileId: req.params.fileid })
-
-		await emptyS3Directory(process.env.AWS_BUCKET_NAME, req.params.fileid)
-
-		let deletePromise = s3
-			.deleteObject({
-				Bucket: process.env.AWS_BUCKET_NAME,
-				Key: req.params.fileid,
-			})
-			.promise()
-
-		deletePromise
-			.then(() => {
-				req.flash('success', 'File(s) deleted')
-				res.redirect('/documents')
-			})
-			.catch(e => {
-				throw e
-			})
-	} catch (error) {
-		req.flash('warn', "Couldn't delete file(s)")
-		res.redirect('/documents')
-	}
-})
 
 router
 	.route('/checkout/:fileid')
@@ -164,8 +139,9 @@ router
 				file.sharedWith.includes(req.session.user)
 			)
 		) {
-			req.flash('warn', 'Not allowed to checkout')
-			res.redirect(req.originalUrl)
+			res
+				.status(401)
+				.json({ payload: { message: 'Not allowed to download file' } })
 		} else {
 			file.lockedBy = req.session.user
 			file.locked = true
@@ -238,23 +214,51 @@ router.route('/share/:fileid').post(async (req, res) => {
 		document.sharedWith.push(sharedUser._id)
 		await document.save()
 	} else if (req.session.user.username == req.body.shareUsername) {
-		req.flash('warn', "Can't share with yourself")
+		return res
+			.status(401)
+			.json({ payload: { message: 'Cant share with yourself' } })
 	} else {
-		req.flash('warn', 'You are not the owner')
+		return res.status(401).json({ payload: { message: 'Not the owner' } })
 	}
 
-	res.redirect('/documents/' + fileid)
+	res.status(200).json({ payload: { message: 'Successfully shared' } })
 })
 
-router.route('/:fileid').get(async (req, res) => {
-	let result = await doc
-		.findOne({ fileId: req.params.fileid })
-		.populate('owner')
-		.populate('lockedBy')
-		.populate('sharedWith')
-		.populate('log.user')
-	res.render('single_view', { title: 'Document View', doc: result })
-})
+router
+	.route('/:fileid')
+	.get(async (req, res) => {
+		let result = await doc
+			.findOne({ fileId: req.params.fileid })
+			.populate('owner')
+			.populate('lockedBy')
+			.populate('sharedWith')
+			.populate('log.user')
+		res.status(200).json({ payload: result })
+	})
+	.delete(async (req, res) => {
+		try {
+			await doc.deleteOne({ fileId: req.params.fileid })
+
+			await emptyS3Directory(process.env.AWS_BUCKET_NAME, req.params.fileid)
+
+			let deletePromise = s3
+				.deleteObject({
+					Bucket: process.env.AWS_BUCKET_NAME,
+					Key: req.params.fileid,
+				})
+				.promise()
+
+			deletePromise
+				.then(() => {
+					res.status(200).json({ payload: { message: 'File deleted' } })
+				})
+				.catch(e => {
+					throw e
+				})
+		} catch (error) {
+			res.status(401).json({ payload: { message: 'Couldnt delete file' } })
+		}
+	})
 
 // HELPER FUNC
 

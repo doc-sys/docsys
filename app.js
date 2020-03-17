@@ -5,9 +5,13 @@ var cookieParser = require('cookie-parser')
 var logger = require('morgan')
 var session = require('express-session')
 var flash = require('express-flash')
+var compression = require('compression')
+var helmet = require('helmet')
 var mongoose = require('mongoose')
 var i18n = require('i18n')
 var fs = require('fs')
+var jwt = require('jsonwebtoken')
+var cors = require('cors')
 
 require('dotenv').config()
 
@@ -32,6 +36,10 @@ mongoose.connection.on('open', () => {
 	// eslint-disable-next-line no-console
 	console.log('Connected to MongoDB')
 })
+
+// Production
+app.use(compression())
+app.use(helmet())
 
 i18n.configure({
 	locales: ['en', 'de'],
@@ -67,6 +75,7 @@ app.use(
 		saveUninitialized: true,
 	})
 )
+app.use(cors())
 app.use(i18n.init)
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -77,14 +86,16 @@ app.locals.moment = require('moment')
 
 // auth middleware
 const authRequired = async (req, res, next) => {
-	if (req.session.isAuthenticated) {
-		res.locals.isAuthenticated = true
-		res.locals.user = req.session.user
+	try {
+		let authHeader = req.headers.authorization
+		const token = authHeader.split(' ')[1]
+
+		let result = await jwt.verify(token, process.env.JWT_SECRET)
+		req.user = result
+
 		next()
-	} else {
-		req.flash('warn', 'You need to be logged in')
-		let url = encodeURIComponent(req.originalUrl)
-		res.redirect('/user/login?path=' + url)
+	} catch (error) {
+		res.status(500).json({ payload: { message: error.message } })
 	}
 }
 

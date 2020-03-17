@@ -1,75 +1,60 @@
 var express = require('express')
+var jwt = require('jsonwebtoken')
 var router = express.Router()
 
 var user = require('../models/user')
 
 /* GET users listing. */
-router
-	.route('/login')
-	.post(async (req, res) => {
-		try {
-			let result = await user.getAuthenticated(
-				req.body.username,
-				req.body.password
-			)
+router.route('/login').post(async (req, res) => {
+	try {
+		let result = await user.getAuthenticated(
+			req.body.username,
+			req.body.password
+		)
 
-			result.password = ''
+		result.avatar = null
 
-			req.session.user = result
-			req.session.isAuthenticated = true
+		const token = await jwt.sign(result.toJSON(), process.env.JWT_SECRET, {
+			expiresIn: process.env.JWT_EXPIRES,
+		})
 
-			res.setLocale(result.settings.language)
+		res.status(200).json({ payload: { user: result, token: token } })
+	} catch (error) {
+		res.status(401).json({ payload: { message: error.message } })
+	}
+})
 
-			if (typeof req.query.path != 'undefined') {
-				res.redirect(decodeURIComponent(req.query.path))
-			} else {
-				res.redirect('/documents')
-			}
-		} catch (error) {
-			req.flash('warn', `Following error occured - ${error}`)
-			res.redirect('/user/login?path=' + req.query.path)
-		}
-	})
-	.get(async (req, res) => {
-		if (req.session.isAuthenticated) {
-			res.redirect('/documents')
-		} else {
-			res.render('login', {
-				query: req.query.path ? encodeURIComponent(req.query.path) : '',
-			})
-		}
-	})
-
-router
-	.route('/signup')
-	.get(async (req, res) => {
-		if (req.session.isAuthenticated) {
-			res.redirect('/documents')
-		} else {
-			res.render('signup')
-		}
-	})
-	.post(async (req, res) => {
+router.route('/signup').post(async (req, res) => {
+	try {
 		let newUser = new user({
 			username: req.body.username,
 			password: req.body.password,
-			mail: req.body.email,
+			mail: req.body.mail,
 			settings: {
 				language: 'en',
-				displayName: req.body.name,
+				displayName: req.body.displayName,
 			},
 		})
 
+		console.log(newUser.toObject())
+
+		const token = jwt.sign(newUser.toObject(), process.env.JWT_SECRET, {
+			expiresIn: process.env.JWT_EXPIRES,
+		})
+
 		await newUser.save()
-		req.session.user = newUser
-		req.session.isAuthenticated = true
 
-		res.redirect('/')
-	})
+		res.status(200).json({ payload: { user: newUser, token: token } })
+	} catch (error) {
+		console.log(error)
+		res.status(500).json({ payload: { message: error.message } })
+	}
+})
 
-router.get('/logout', async (req, res) => {
+// Commented until I know if this is neccessary for react
+/* router.get('/logout', async (req, res) => {
 	await req.session.destroy()
 	res.redirect('/')
-})
+}) */
 
 module.exports = router
