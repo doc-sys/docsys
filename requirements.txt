@@ -1,3 +1,0 @@
-PIL
-pytesseract
-pdf2image
