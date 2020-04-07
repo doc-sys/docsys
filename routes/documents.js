@@ -5,15 +5,19 @@ var uuid = require('uuid/v4')
 var ftype = require('file-type')
 var fs = require('fs').promises
 var archiver = require('archiver')
-const Queue = require('bee-queue')
+/* const Queue = require('bee-queue')
 
 const convertQueue = new Queue('pdfconversion', {
 	activateDelayedJobs: true,
 	redis: { url: process.env.REDIS_URL },
 })
-const ocrQueue = new Queue('ocr', { redis: process.env.REDIS_URL })
+const ocrQueue = new Queue('ocr', { redis: process.env.REDIS_URL }) */
 
 var router = express.Router()
+
+// DELETE IN PROD!!!!!
+let delay = require('express-delay')
+router.use(delay(1000))
 
 var doc = require('../models/document')
 var user = require('../models/user')
@@ -28,6 +32,29 @@ var s3 = new aws.S3({
 
 var upload = multer({
 	storage: multer.memoryStorage(),
+})
+
+router.get('/own', async (req, res) => {
+	try {
+		let ownDocs = await doc
+			.find({ owner: req.user._id })
+			.sort('-dated')
+			.select('title dated fileId locked')
+
+		res.status(200).json({ payload: ownDocs })
+	} catch (e) {
+		console.log(e)
+	}
+})
+
+router.get('/shared', async (req, res) => {
+	let sharedDocs = await doc
+		.find({ sharedWith: req.user._id })
+		.sort('-dated')
+		.populate('owner')
+		.select('title dated fileId locked owner.avatar')
+
+	res.status(200).json({ payload: sharedDocs })
 })
 
 router
@@ -135,16 +162,17 @@ router
 		//check permissions
 		if (
 			!(
-				req.session.user.username == file.owner.username ||
+				req.user.username == file.owner.username ||
 				file.sharedWith.includes(req.session.user)
-			)
+			) ||
+			file.locked
 		) {
 			res
 				.status(401)
 				.json({ payload: { message: 'Not allowed to download file' } })
 		} else {
-			file.lockedBy = req.session.user
-			file.locked = true
+			file.lockedBy = req.user
+			//file.locked = true
 			await file.save()
 
 			res.writeHead(200, {

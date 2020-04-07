@@ -9,8 +9,8 @@ var upload = multer({
 	storage: multer.memoryStorage(),
 })
 
-router.route('/').post(upload.single('avatar'), async (req, res) => {
-	let thisUser = await user.findOne({ _id: req.session.user._id })
+router.route('/avatar').post(upload.single('file'), async (req, res) => {
+	let thisUser = await user.findOne({ _id: req.user._id })
 
 	if (typeof req.file != 'undefined') {
 		let avatar = await sharp(req.file.buffer)

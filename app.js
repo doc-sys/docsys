@@ -38,8 +38,8 @@ mongoose.connection.on('open', () => {
 })
 
 // Production
-app.use(compression())
-app.use(helmet())
+//app.use(compression())
+//app.use(helmet())
 
 i18n.configure({
 	locales: ['en', 'de'],
@@ -87,15 +87,21 @@ app.locals.moment = require('moment')
 // auth middleware
 const authRequired = async (req, res, next) => {
 	try {
-		let authHeader = req.headers.authorization
-		const token = authHeader.split(' ')[1]
+		let token
+
+		if (req.query.token) {
+			token = req.query.token
+		} else {
+			let authHeader = req.headers.authorization
+			token = authHeader.split(' ')[1]
+		}
 
 		let result = await jwt.verify(token, process.env.JWT_SECRET)
 		req.user = result
 
 		next()
 	} catch (error) {
-		res.status(500).json({ payload: { message: error.message } })
+		res.status(500).json({ payload: { message: 'Unauthorized access' } })
 	}
 }
 
@@ -127,7 +133,7 @@ app.use(function(err, req, res) {
 
 	// render the error page
 	res.status(err.status || 500)
-	res.render('error')
+	res.json({ payload: { message: err.message } })
 })
 
 module.exports = app
