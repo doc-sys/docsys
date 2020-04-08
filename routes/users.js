@@ -12,8 +12,6 @@ router.route('/login').post(async (req, res) => {
 			req.body.password
 		)
 
-		result.avatar = null
-
 		const token = await jwt.sign(result.toJSON(), process.env.JWT_SECRET, {
 			expiresIn: process.env.JWT_EXPIRES,
 		})
@@ -51,10 +49,20 @@ router.route('/signup').post(async (req, res) => {
 	}
 })
 
-// Commented until I know if this is neccessary for react
-/* router.get('/logout', async (req, res) => {
-	await req.session.destroy()
-	res.redirect('/')
-}) */
+router.route('/signup/:inviteid').post(async (req, res) => {
+	res.status(200).json()
+})
+
+router.route('/autocomplete').get(async (req, res) => {
+	try {
+		let userList = await user
+			.find()
+			.select('username settings.displayName avatar')
+
+		res.status(200).json({ payload: userList })
+	} catch (error) {
+		res.status(500).json({ payload: { message: error.message } })
+	}
+})
 
 module.exports = router

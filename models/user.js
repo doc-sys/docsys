@@ -119,13 +119,13 @@ user.methods.incLoginAttempts = function() {
 user.statics.getAuthenticated = async function(username, password) {
 	return new Promise((resolve, reject) => {
 		this.findOne({ username: username }, async function(err, thisUser) {
-			if (err) return reject(err)
+			if (err) return handleError(reject, err)
 
-			if (!thisUser) return reject(reasons.NOT_FOUND)
+			if (!thisUser) return handleError(reject, reasons.NOT_FOUND)
 
 			if (thisUser.isLocked) {
 				await thisUser.incLoginAttempts
-				return reject(reasons.MAX_ATTEMPTS)
+				return handleError(reject, reasons.MAX_ATTEMPTS)
 			}
 
 			let compareResult = await thisUser.comparePassword(password)
@@ -144,9 +144,17 @@ user.statics.getAuthenticated = async function(username, password) {
 			}
 
 			await thisUser.incLoginAttempts
-			return reject(reasons.PASSWORD_INCORRECT)
+			return handleError(reject, reasons.PASSWORD_INCORRECT)
 		})
 	})
+}
+
+function handleError(reject, error) {
+	if (error == 0) {
+		reject('User not found')
+	} else {
+		reject(error)
+	}
 }
 
 module.exports = mongoose.model('User', user)
