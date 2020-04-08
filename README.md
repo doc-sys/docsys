@@ -1,12 +1,21 @@
 # docSys
 
-A document management system written in Node and React, ready for the cloud. It is meant to incorporate the best from existing DMS and add an easy to expand API and the comforts of a modern day React app. For a full feature list see the FEATURES section below.
+A document management system written in Node and React, ready for the cloud. It is meant to incorporate the best from existing DMS and add an easy to expand API and the comforts of a modern day React app. For a full feature list see the [features](#features) section below.
+
+<p style="color:red;">STILL A WORK IN PROGRESS!</p>
 
 Be advised that the actual client and the CLI tool for easy deployment locally and to the cloud are located in seperate repositories.
 
 [docSys React Repository](https://github.com/flexwie/docsys_react)
 
 [docSys CLI Repository](https://github.com/flexwie/docsys_cli)
+
+## Features
+
+- AWS storage with versioning and encryption
+- File sharing and locking
+- E-Mail notifications
+- multi-file handling
 
 ## Getting Started
 
@@ -41,7 +50,7 @@ curl localhost:3001
 
 ## Running the tests
 
-Currently there are no tests. If you want to contribute to this project this would be a great and very much appreciated way to start. See more down at the [contribute](#contribute) section.
+Currently there are no tests. If you want to contribute to this project this would be a great and very much appreciated way to start. See more down at the [contribute](#contributing) section.
 
 ## Deployment
 
