@@ -5,6 +5,7 @@ A document management system written in Node and React, ready for the cloud. It 
 Be advised that the actual client and the CLI tool for easy deployment locally and to the cloud are located in seperate repositories.
 
 [docSys React Repository](https://github.com/flexwie/docsys_react)
+
 [docSys CLI Repository](https://github.com/flexwie/docsys_cli)
 
 ## Getting Started
@@ -15,17 +16,13 @@ These instructions will get you a copy of the project up and running on your loc
 
 For this to run, you will need Node and npm installed as well as a running MongoDB instance either on your local machine or hosted somewhere else. You will also need an AWS account with a S3 bucket already created and an AWS user with permissions to use that bucket.
 
-```
-Give examples
-```
-
 ### Installing
 
 A step by step series of examples that tell you how to get a development env running
 
 Install the dependencies
 
-```
+```bash
 npm i -y
 ```
 
@@ -33,12 +30,12 @@ Then add an .env file on the root level and configure it acording to the [config
 
 Start the server with npm.
 
-```
+```bash
 npm start
 ```
 
 Now you can curl the API and should get a valid JSON response.
-```
+```bash
 curl localhost:3001
 ```
 
@@ -94,4 +91,4 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GNUv3.0 - see the [LICENSE.md](LICENSE.md) file for details
