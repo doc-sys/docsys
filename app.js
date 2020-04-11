@@ -51,32 +51,25 @@ i18n.configure({
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'pug')
 
-// logging setup
-app.use(
-	logger('[ :date[web] ] :method :url - :status in :response-time[3] ms', {
-		skip: function(req, res) {
-			return res.statusCode < 400
-		},
-	})
-)
-app.use(
-	logger('[ :date[web] ] :method :url - :remote-addr', {
-		stream: fs.createWriteStream(path.join(__dirname, 'access.log'), {
-			flags: 'a',
-		}),
-	})
-)
+// logging setup (check if using test env)
+if (process.env.NODE_ENV !== 'test') {
+	app.use(
+		logger('[ :date[web] ] :method :url - :status in :response-time[3] ms', {
+			skip: function (req, res) {
+				return res.statusCode < 400
+			},
+		})
+	)
+	app.use(
+		logger('[ :date[web] ] :method :url - :remote-addr', {
+			stream: fs.createWriteStream(path.join(__dirname, 'access.log'), {
+				flags: 'a',
+			}),
+		})
+	)
+}
 
-app.use(
-	session({
-		cookie: { maxAge: 60000000 },
-		secret: 'testsec12',
-		resave: true,
-		saveUninitialized: true,
-	})
-)
 app.use(cors())
-app.use(i18n.init)
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser('testsec12'))
