@@ -5,13 +5,12 @@ var uuid = require('uuid/v4')
 var ftype = require('file-type')
 var fs = require('fs').promises
 var archiver = require('archiver')
-/* const Queue = require('bee-queue')
+const Queue = require('bee-queue')
 
-const convertQueue = new Queue('pdfconversion', {
+const mailQueue = new Queue('mail', {
 	activateDelayedJobs: true,
 	redis: { url: process.env.REDIS_URL },
 })
-const ocrQueue = new Queue('ocr', { redis: process.env.REDIS_URL }) */
 
 var router = express.Router()
 
@@ -238,10 +237,10 @@ router.route('/share/:fileid').post(async (req, res) => {
 	let document = await doc.findOne({ fileId: fileid }).populate('owner')
 	let sharedUser = await user.findOne({ username: req.body.shareUsername })
 
-	if (req.session.user.username == document.owner.username) {
+	if (req.user.username == document.owner.username) {
 		document.sharedWith.push(sharedUser._id)
 		await document.save()
-	} else if (req.session.user.username == req.body.shareUsername) {
+	} else if (req.user.username == req.body.shareUsername) {
 		return res
 			.status(401)
 			.json({ payload: { message: 'Cant share with yourself' } })
@@ -250,6 +249,17 @@ router.route('/share/:fileid').post(async (req, res) => {
 	}
 
 	res.status(200).json({ payload: { message: 'Successfully shared' } })
+	mailQueue.createJob({
+		to: sharedUser.mail,
+		subject: `${document.owner.settings.displayName} shared a file with you`,
+		payload: {
+			filename: document.title,
+			avatar: document.owner.avatar,
+			username: document.owner.settings.displayName,
+			url_to_open: `${process.env.HOST}/view/${document.fileId}`,
+			host_url: process.env.HOST,
+		},
+	})
 })
 
 router
@@ -280,7 +290,7 @@ router
 				.then(() => {
 					res.status(200).json({ payload: { message: 'File deleted' } })
 				})
-				.catch(e => {
+				.catch((e) => {
 					throw e
 				})
 		} catch (error) {
@@ -341,7 +351,7 @@ async function uploadToS3Directory(bucket, dir, data, mime, index) {
 		.then(() => {
 			return true
 		})
-		.catch(e => {
+		.catch((e) => {
 			throw new Error(e)
 		})
 }
