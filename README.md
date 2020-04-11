@@ -1,4 +1,4 @@
-![docSys Logo](Logo_L.png "docSys Logo")
+![docSys Logo](Logo_L.png 'docSys Logo')
 
 A document management system written in Node and React, ready for the cloud. It is meant to incorporate the best from existing DMS and add an easy to expand API and the comforts of a modern day React app. For a full feature list see the [features](#features) section below.
 
@@ -23,7 +23,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-For this to run, you will need Node and npm installed as well as a running MongoDB instance either on your local machine or hosted somewhere else. You will also need an AWS account with a S3 bucket already created and an AWS user with permissions to use that bucket.
+For this to run, you will need Node and npm installed as well as a running MongoDB instance either on your local machine or hosted somewhere else. You will also need an AWS account with a S3 bucket already created and an AWS user with permissions to use that bucket. To use the queues for sending mails to your users you will also have to provide credentials for a SMTP host and a Redis URI.
 
 ### Installing
 
@@ -44,6 +44,7 @@ npm start
 ```
 
 Now you can curl the API and should get a valid JSON response.
+
 ```bash
 curl localhost:3001
 ```
@@ -60,23 +61,29 @@ docSys is meant to be deployed directly to the cloud using the provided cli or c
 
 We are using [dotenv](https://github.com/motdotla/dotenv) to load sensitive data into this application. Just set the corresponding environment variables in your .env file and you are good to go.
 
-Key | Comment | Example
---- | --- | ---
-AWS_ACCESS_KEY | Access key to your AWS user | 
-AWS_SECRET_ACCESS_KEY | Secret access key to your AWS user | 
-AWS_BUCKET_NAME | S3 bucket to use | docSys
-DB_PATH | MongoDB URI | mongodb://docsysusr:docsyspw@docsys.io:27017/docsys
-REDIS_URL | Redis URI | redis://redis.example.com?db=docsys&password=correcthorsebatterystaple
-JWT_SECRET | Secret used to hash your JWT | random string
-JWT_EXPIRES_IN | Expiration of your JWT in ms | 36000
+| Key                   | Comment                                    | Example                                                                |
+| --------------------- | ------------------------------------------ | ---------------------------------------------------------------------- |
+| HOST                  | The host domain your instance is runnig on | docsys.io                                                              |
+| AWS_ACCESS_KEY        | Access key to your AWS user                |
+| AWS_SECRET_ACCESS_KEY | Secret access key to your AWS user         |
+| AWS_BUCKET_NAME       | S3 bucket to use                           | docSys                                                                 |
+| DB_PATH               | MongoDB URI                                | mongodb://docsysusr:docsyspw@docsys.io:27017/docsys                    |
+| REDIS_URL             | Redis URI                                  | redis://redis.example.com?db=docsys&password=correcthorsebatterystaple |
+| JWT_SECRET            | Secret used to hash your JWT               | random string                                                          |
+| JWT_EXPIRES_IN        | Expiration of your JWT in ms               | 36000                                                                  |
+| SMTP_HOST             | Host running your SMTP server              | mail.docsys.io                                                         |
+| SMTP_PORT             | Port where SMTP is listening               | 587                                                                    |
+| SMTP_USER             | User or mail for your SMTP                 | noreply@docsys.io                                                      |
+| SMTP_PASSWORD         | User password                              | docsyspwd                                                              |
+| SMTP_SECURE           | If to use SSL                              | true                                                                   |
 
 ## Built With
 
-* [Express](https://github.com/expressjs/express) - The web framework used
-* [Mongoose](https://github.com/Automattic/mongoose) - Database driver
-* [AWS SDK](https://github.com/aws/aws-sdk-js) - handling storage
-* [multer](https://github.com/expressjs/multer) - File upload
-* [BeeQueue](https://github.com/bee-queue/bee-queue) - Message queueing
+- [Express](https://github.com/expressjs/express) - The web framework used
+- [Mongoose](https://github.com/Automattic/mongoose) - Database driver
+- [AWS SDK](https://github.com/aws/aws-sdk-js) - handling storage
+- [multer](https://github.com/expressjs/multer) - File upload
+- [BeeQueue](https://github.com/bee-queue/bee-queue) - Message queueing
 
 ## Contributing
 
@@ -86,7 +93,7 @@ There are a lot of things to get you into contributing to this project. Some are
 - **Documentation** - Some kind of docs that are documenting the different routes and what they do
 - **Storage Engine** - Currently it's only possible to use AWS for file storage but I would love to have other like Azure and GCC onboard as well
 - **Security** - Carefully rweworking the API to patch some potential security flaws that I have not yet found
-- **CI pipeline** - Creating a CI pipeline for testing etc
+- **CI pipeline** - Create a CI pipeline for testing etc
 
 If you want to help but need guidance on where to start just open an issue and I will come and figure it out with you. Also check the React and CLI repos for some more ways to contribute!
 
@@ -94,7 +101,7 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Authors
 
-* **Felix Wieland** - *Initial work* - [felixwie](https://felixwie.com)
+- **Felix Wieland** - _Initial work_ - [felixwie](https://felixwie.com)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
