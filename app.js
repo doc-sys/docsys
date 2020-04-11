@@ -1,14 +1,9 @@
-var createError = require('http-errors')
 var express = require('express')
 var path = require('path')
-var cookieParser = require('cookie-parser')
 var logger = require('morgan')
-var session = require('express-session')
-var flash = require('express-flash')
 var compression = require('compression')
 var helmet = require('helmet')
 var mongoose = require('mongoose')
-var i18n = require('i18n')
 var fs = require('fs')
 var jwt = require('jsonwebtoken')
 var cors = require('cors')
@@ -23,29 +18,25 @@ var settingsRouter = require('./routes/settings')
 var helperRouter = require('./routes/helper')
 
 var app = express()
+
 try {
-	mongoose.connect(process.env.DB_PATH, {
-		useNewUrlParser: true,
-		useUnifiedTopology: true,
-	})
+	mongoose.connect(
+		process.env.NODE_ENV == 'test'
+			? process.env.DB_PATH_TEST
+			: process.env.DB_PATH,
+		{
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+		}
+	)
 } catch (error) {
 	throw new Error(error)
 }
 mongoose.set('useCreateIndex', true)
-mongoose.connection.on('open', () => {
-	// eslint-disable-next-line no-console
-	console.log('Connected to MongoDB')
-})
 
 // Production
 //app.use(compression())
 //app.use(helmet())
-
-i18n.configure({
-	locales: ['en', 'de'],
-	directory: __dirname + '/locales',
-	defaultLocale: 'en',
-})
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
