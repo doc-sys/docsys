@@ -72,10 +72,6 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(cookieParser('testsec12'))
-app.use(express.static(path.join(__dirname, 'public')))
-app.use(flash())
-app.locals.moment = require('moment')
 
 // auth middleware
 const authRequired = async (req, res, next) => {
@@ -97,14 +93,6 @@ const authRequired = async (req, res, next) => {
 		res.status(500).json({ payload: { message: 'Unauthorized access' } })
 	}
 }
-
-app.use((req, res, next) => {
-	if (req.session.user) {
-		res.setLocale(req.session.user.settings.language)
-	}
-
-	next()
-})
 
 app.use('/user', usersRouter)
 app.use('/admin', adminRouter)
