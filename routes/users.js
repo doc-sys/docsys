@@ -4,6 +4,7 @@ var router = express.Router()
 
 var user = require('../models/user')
 
+
 router
 	.route('/login')
 	/**
@@ -74,9 +75,22 @@ router
 		}
 	})
 
-router.route('/signup/:inviteid').post(async (req, res) => {
-	res.status(200).json()
-})
+router
+	.route('/signup/:inviteid')
+	/**
+	 * @api {post} /user/signup/:inviteid
+	 * @apiName userInvite
+	 * @apiGroup User
+	 * @apiDescription New alternative for userSignup. Potential user should recieve a token per mail with that he can join the organistaion.
+	 * @apiParam {String} inviteid The invitatation ID as part of the POST URL
+	 * @apiSuccess {Object} user User profile
+	 * @apiSuccess {String} token API token
+	 * @apiError (500) {String} InternalError Something went wrong during signup. Most likely to be during validation.
+	 * @apiError (401) {String} InvalidInvite User didn't provide a valid ID
+	 */
+	.post(async (req, res) => {
+		res.status(200).json()
+	})
 
 router.route('/autocomplete').get(async (req, res) => {
 	try {
