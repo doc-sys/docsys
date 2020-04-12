@@ -1,7 +1,10 @@
 var express = require('express')
 var path = require('path')
 var logger = require('morgan')
+
+// eslint-disable-next-line no-unused-vars
 var compression = require('compression')
+// eslint-disable-next-line no-unused-vars
 var helmet = require('helmet')
 var mongoose = require('mongoose')
 var fs = require('fs')
