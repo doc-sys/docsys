@@ -3,3 +3,4 @@ helper/files
 .env
 access.log
 task_server
+.nyc_output

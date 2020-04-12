@@ -3,8 +3,8 @@ process.env.NODE_ENV = 'test'
 
 // Libraries to be tested
 // let mongoose = require('mongoose')
-let user = require('../models/user')
-let server = require('../app')
+let user = require('../src/models/user')
+let server = require('../src/app')
 
 // Libraries to test
 let chai = require('chai')
