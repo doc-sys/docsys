@@ -91,6 +91,9 @@ user.methods.saveAvatar = async function (avatar) {
 user.methods.comparePassword = function (pwd) {
 	let userpwd = this.password
 	return new Promise(function (resolve, reject) {
+		if (typeof pwd == 'undefined') {
+			reject('Please provide password')
+		}
 		bcrypt.compare(pwd, userpwd, function (err, isMatch) {
 			if (err) {
 				reject(err)
@@ -131,6 +134,10 @@ user.statics.getAuthenticated = async function (username, password) {
 			if (thisUser.isLocked) {
 				await thisUser.incLoginAttempts
 				return handleError(reject, reasons.MAX_ATTEMPTS)
+			}
+
+			if (!password) {
+				return handleError(reject, 'Invalid password')
 			}
 
 			let compareResult = await thisUser.comparePassword(password)
