@@ -91,7 +91,7 @@ router
 					file.buffer
 				)
 				writtenFile.then(async () => {
-					if (filetype.ext == 'pdf') {
+					/* if (filetype.ext == 'pdf') {
 						await convertQueue
 							.createJob({
 								filename: filename,
@@ -107,7 +107,7 @@ router
 							})
 							.delayUntil(Date.now() + 3000)
 							.save()
-					}
+					} */
 				})
 
 				await uploadToS3Directory(
@@ -249,7 +249,7 @@ router.route('/share/:fileid').post(async (req, res) => {
 	}
 
 	res.status(200).json({ payload: { message: 'Successfully shared' } })
-	mailQueue.createJob({
+	/* mailQueue.createJob({
 		to: sharedUser.mail,
 		subject: `${document.owner.settings.displayName} shared a file with you`,
 		payload: {
@@ -259,7 +259,7 @@ router.route('/share/:fileid').post(async (req, res) => {
 			url_to_open: `${process.env.HOST}/view/${document.fileId}`,
 			host_url: process.env.HOST,
 		},
-	})
+	}) */
 })
 
 router
