@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 let mongoose = require('mongoose')
 let bcrypt = require('bcrypt')
 let sharp = require('sharp')
@@ -105,7 +106,7 @@ user.methods.comparePassword = function (pwd) {
 }
 
 user.methods.incLoginAttempts = function () {
-	return new Promise(function (resolve, reject) {
+	return new Promise(function (resolve) {
 		if (this.lockUntil && this.lockUntil < Date.now()) {
 			return resolve(
 				this.update({
