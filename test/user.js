@@ -10,7 +10,7 @@ let server = require('../app')
 let chai = require('chai')
 let chaiHttp = require('chai-http')
 
-
+// eslint-disable-next-line no-unused-vars
 let should = chai.should()
 
 chai.use(chaiHttp)
@@ -20,7 +20,7 @@ server.listen(process.env.PORT || 3001)
 // Actual tests
 describe('User', () => {
 	before((done) => {
-		user.deleteMany({}, (err) => {
+		user.deleteMany({}, () => {
 			done()
 		})
 	})
