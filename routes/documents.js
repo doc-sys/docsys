@@ -5,12 +5,12 @@ var uuid = require('uuid/v4')
 var ftype = require('file-type')
 var fs = require('fs').promises
 var archiver = require('archiver')
-const Queue = require('bee-queue')
+// const Queue = require('bee-queue')
 
-const mailQueue = new Queue('mail', {
-	activateDelayedJobs: true,
-	redis: { url: process.env.REDIS_URL },
-})
+// const mailQueue = new Queue('mail', {
+// 	activateDelayedJobs: true,
+// 	redis: { url: process.env.REDIS_URL },
+// })
 
 var router = express.Router()
 
