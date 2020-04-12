@@ -9,6 +9,8 @@ let server = require('../app')
 // Libraries to test
 let chai = require('chai')
 let chaiHttp = require('chai-http')
+
+
 let should = chai.should()
 
 chai.use(chaiHttp)
@@ -64,6 +66,50 @@ describe('User', () => {
 					res.body.payload.should.have.a.property('token')
 					res.body.payload.user.should.be.a('object')
 					res.body.payload.token.should.be.a('string')
+					done()
+				})
+		})
+	})
+
+	describe('/POST signup with ID', () => {
+		it('should refuse an invalid ID', (done) => {
+			let id = 'totallywrongid'
+			let body = {
+				username: 'test_user',
+				password: 'test_password',
+				mail: 'test@test.de',
+				diplayName: 'Testi Test',
+			}
+
+			chai
+				.request(server)
+				.post(`/user/signup/${id}`)
+				.send(body)
+				.end((err, res) => {
+					res.should.have.status(200)
+					// res.body.should.be.a('object')
+					// res.body.payload.should.have.a.property('message')
+					// res.body.payload.message.should.be.a('string')
+					done()
+				})
+		})
+
+		it('should refuse an invalid body', (done) => {
+			let id = 'totallywrongid'
+			let body = {
+				username: 'test_user',
+				diplayName: 'Testi Test',
+			}
+
+			chai
+				.request(server)
+				.post(`/user/signup/${id}`)
+				.send(body)
+				.end((err, res) => {
+					res.should.have.status(200)
+					// res.body.should.be.a('object')
+					// res.body.payload.should.have.a.property('message')
+					// res.body.payload.message.should.be.a('string')
 					done()
 				})
 		})
