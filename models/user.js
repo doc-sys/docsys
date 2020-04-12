@@ -36,6 +36,13 @@ let user = new mongoose.Schema({
 	mail: {
 		type: String,
 		required: true,
+		trim: true,
+		lowercase: true,
+		validate: [validateMail, 'Please provide a valid eMail address'],
+		match: [
+			/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+			'Please provide a valid eMail address',
+		],
 	},
 	loginAttempts: {
 		type: Number,
@@ -53,17 +60,17 @@ var reasons = (user.statics.failedLogin = {
 	MAX_ATTEMPTS: 2,
 })
 
-user.virtual('isLocked').get(function() {
+user.virtual('isLocked').get(function () {
 	return !!(this.lockUntil && this.lockUntil > Date.now())
 })
 
-user.pre('save', function(next) {
+user.pre('save', function (next) {
 	var thisUser = this
 
 	if (!thisUser.isModified('password')) return next()
-	bcrypt.genSalt(SALT_FACTOR, function(err, salt) {
+	bcrypt.genSalt(SALT_FACTOR, function (err, salt) {
 		if (err) return next(err)
-		bcrypt.hash(thisUser.password, salt, function(err, hash) {
+		bcrypt.hash(thisUser.password, salt, function (err, hash) {
 			if (err) return next(err)
 			thisUser.password = hash
 			next()
@@ -75,18 +82,16 @@ user.pre('save', function(next) {
  * Saves the avatar after resizing it
  * @param {Buffer} avatar The image buffer
  */
-user.methods.saveAvatar = async function(avatar) {
-	let newAvatar = await sharp(avatar)
-		.resize(64, 64)
-		.toBuffer()
+user.methods.saveAvatar = async function (avatar) {
+	let newAvatar = await sharp(avatar).resize(64, 64).toBuffer()
 
 	this.avatar = newAvatar
 }
 
-user.methods.comparePassword = function(pwd) {
+user.methods.comparePassword = function (pwd) {
 	let userpwd = this.password
-	return new Promise(function(resolve, reject) {
-		bcrypt.compare(pwd, userpwd, function(err, isMatch) {
+	return new Promise(function (resolve, reject) {
+		bcrypt.compare(pwd, userpwd, function (err, isMatch) {
 			if (err) {
 				reject(err)
 			} else {
@@ -96,8 +101,8 @@ user.methods.comparePassword = function(pwd) {
 	})
 }
 
-user.methods.incLoginAttempts = function() {
-	return new Promise(function(resolve, reject) {
+user.methods.incLoginAttempts = function () {
+	return new Promise(function (resolve, reject) {
 		if (this.lockUntil && this.lockUntil < Date.now()) {
 			return resolve(
 				this.update({
@@ -116,9 +121,9 @@ user.methods.incLoginAttempts = function() {
 	})
 }
 
-user.statics.getAuthenticated = async function(username, password) {
+user.statics.getAuthenticated = async function (username, password) {
 	return new Promise((resolve, reject) => {
-		this.findOne({ username: username }, async function(err, thisUser) {
+		this.findOne({ username: username }, async function (err, thisUser) {
 			if (err) return handleError(reject, err)
 
 			if (!thisUser) return handleError(reject, reasons.NOT_FOUND)
@@ -137,7 +142,7 @@ user.statics.getAuthenticated = async function(username, password) {
 					$unset: { lockUntil: 1 },
 				}
 
-				return thisUser.update(updates, function(err) {
+				return thisUser.update(updates, function (err) {
 					if (err) return reject(err)
 					return resolve(thisUser)
 				})
@@ -155,6 +160,11 @@ function handleError(reject, error) {
 	} else {
 		reject(error)
 	}
+}
+
+function validateMail(mail) {
+	var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+	return re.test(mail)
 }
 
 module.exports = mongoose.model('User', user)
