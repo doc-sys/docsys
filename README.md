@@ -1,4 +1,4 @@
-![docSys Logo](Logo_L.png 'docSys Logo')
+![docSys Logo](logo.svg 'docSys Logo')
 
 A document management system written in Node and React, ready for the cloud. It is meant to incorporate the best from existing DMS and add an easy to expand API and the comforts of a modern day React app. For a full feature list see the [features](#features) section below.
 
