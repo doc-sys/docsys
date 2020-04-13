@@ -41,10 +41,6 @@ mongoose.set('useCreateIndex', true)
 //app.use(compression())
 //app.use(helmet())
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'pug')
-
 // logging setup (check if using test env)
 if (process.env.NODE_ENV !== 'test') {
 	app.use(
