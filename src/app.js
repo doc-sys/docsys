@@ -94,8 +94,7 @@ app.use('/', indexRouter)
 // error handler
 app.use(function (err, req, res) {
 	// reply with error
-	res.status(err.status || 500)
-	res.json({ payload: { message: err.message } })
+	res.status(err.status || 500).json({ payload: { message: err.message } })
 })
 
 module.exports = app
