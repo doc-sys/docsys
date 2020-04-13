@@ -1,0 +1,29 @@
+version: '3.1'
+services:
+    docsys:
+        build: .
+        ports:
+            - "3001:3001"
+        environment:
+            - HOST=localhost
+            - AWS_ACCESS_KEY=<AWS_ACCESS_KEY>
+            - AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
+            - AWS_BUCKET_NAME=<AWS_BUCKET_NAME>
+            - DB_PATH=mongodb://root:password@mongo:27017/docsys?authSource=admin
+            - REDIS_URL=redis://cache
+            - JWT_SECRET=p@55w0rd
+            - JWT_EXPIRES_IN=36000
+    react_client:
+        build: https://github.com/doc-sys/react_client.git
+        ports: 
+            - "8080:80"
+    mongo:
+        image: mongo
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: password
+            MONGO_INITDB_DATABASE: docsys
+    redis:
+        image: redis:alpine
+        restart: always
