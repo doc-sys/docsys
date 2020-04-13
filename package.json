@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"start": "node ./bin/www",
-		"test": "nyc --reporter=text mocha --timeout 10000 --exit",
+		"test": "nyc --reporter=text mocha ./tests --timeout 10000 --exit",
 		"run": "nodemon",
 		"eslint:github-action": "eslint src/"
 	},
