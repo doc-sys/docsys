@@ -101,8 +101,13 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Authors
 
+<<<<<<< HEAD
 - **Felix Wieland** - _Initial work_ - [felixwie](https://felixwie.com)
 - **Mario Reggiori** - _General Assistance_ - [GitHub](https://github.com/marioreggiori)
+=======
+- **Felix Wieland** - [felixwie](https://felixwie.com)
+- **Mario Reggiori** - [GitHub](https://github.com/marioreggiori)
+>>>>>>> removed roles from contributions
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
