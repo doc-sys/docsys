@@ -6,9 +6,9 @@ A document management system written in Node and React, ready for the cloud. It 
 
 Be advised that the actual client and the CLI tool for easy deployment locally and to the cloud are located in seperate repositories.
 
-[docSys React Repository](https://github.com/flexwie/docsys_react)
+[docSys React Repository](https://github.com/doc-sys/react_client)
 
-[docSys CLI Repository](https://github.com/flexwie/docsys_cli)
+[docSys CLI Repository](https://github.com/doc-sys/cli)
 
 ## Features
 
@@ -102,7 +102,7 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 ## Authors
 
 - **Felix Wieland** - _Initial work_ - [felixwie](https://felixwie.com)
-- **Mario Reggiori** - \_General Assistance - [GitHub](https://github.com/marioreggiori)
+- **Mario Reggiori** - _General Assistance_ - [GitHub](https://github.com/marioreggiori)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
