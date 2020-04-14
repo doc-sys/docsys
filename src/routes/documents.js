@@ -14,7 +14,7 @@ var archiver = require('archiver')
 
 var router = express.Router()
 
-// delay responses in production
+// delay responses in developement
 if (process.env.NODE_ENV == 'developement') {
 	let delay = require('express-delay')
 	router.use(delay(1000))
@@ -35,6 +35,13 @@ var upload = multer({
 	storage: multer.memoryStorage(),
 })
 
+/**
+ * @api {get} /document/own Own documents
+ * @apiName documentGetOwn
+ * @apiGroup Document
+ * @apiDescription Returns the users documents
+ * @apiSuccess {Array} ownDocs User documents basic metadata
+ */
 router.get('/own', async (req, res) => {
 	try {
 		let ownDocs = await doc
@@ -48,6 +55,13 @@ router.get('/own', async (req, res) => {
 	}
 })
 
+/**
+ * @api {get} /document/shared Shared documents
+ * @apiName documentGetShared
+ * @apiGroup Document
+ * @apiDescription Returns the documents shared with the user
+ * @apiSuccess {Array} sharedDocs Shared documents basic metadata
+ */
 router.get('/shared', async (req, res) => {
 	let sharedDocs = await doc
 		.find({ sharedWith: req.user._id })
@@ -75,6 +89,18 @@ router
 			.status(200)
 			.json({ payload: { ownDocs: ownDocs, sharedDocs: sharedDocs } })
 	})
+	/**
+	 * @api {post} /document/ New document
+	 * @apiName documentCreate
+	 * @apiGroup Document
+	 * @apiDescription Creates and uploads a new documents with its body.
+	 * @apiParam {Buffer[]} files Page(s) for the document
+	 * @apiParam {String} title Documents subject or title
+	 * @apiParam {Date} dated Date the original document was recieved
+	 * @apiParam {String} comment Optional comment to append to log
+	 * @apiSuccess {String} message Confirming upload
+	 * @apiError (500) {String} InternalError Something went wrong
+	 */
 	.post(upload.array('documents'), async (req, res) => {
 		try {
 			let uid = uuid()
@@ -154,6 +180,15 @@ router
 
 router
 	.route('/checkout/:fileid')
+	/**
+	 * @api {get} /document/checkout/:fileid Document checkout
+	 * @apiName documentCheckout
+	 * @apiGroup Document
+	 * @apiDescription Checks out document and sends files as ZIP archive
+	 * @apiParam {String} fileid The fileid as part of the GET URL
+	 * @apiSuccess (200) {Stream} ZIP file stream
+	 * @apiError (401) PermissionError Not allowed to GET this file
+	 */
 	.get(async (req, res) => {
 		let file = await doc
 			.findOne({ fileId: req.params.fileid })
@@ -210,6 +245,9 @@ router
 			zip.finalize()
 		}
 	})
+	/**
+	 * @api {post} /document/checkout/:fileid
+	 */
 	.post(upload.array('documents'), async (req, res) => {
 		try {
 			let file = await doc.findOne({ fileId: req.params.fileid })
