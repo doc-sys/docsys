@@ -86,9 +86,9 @@ const authRequired = async (req, res, next) => {
 
 app.use('/user', usersRouter)
 app.use('/admin', adminRouter)
-app.use('/documents', authRequired, docRouter)
-app.use('/settings', authRequired, settingsRouter)
-app.use('/functions', authRequired, helperRouter)
+app.use('/document', authRequired, docRouter)
+app.use('/setting', authRequired, settingsRouter)
+app.use('/function', authRequired, helperRouter)
 app.use('/', indexRouter)
 
 // error handler
