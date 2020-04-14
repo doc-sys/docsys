@@ -1,11 +1,11 @@
 class StorageFile {
-    id: string;
-    name: string;
-    created: string;
+    fileId: string;
+    origin: string;
+    body: Buffer;
 
-    constructor(id: string, name: string, created: string) {
-        this.id = id;
-        this.name = name;
-        this.created = created;
+    constructor(fileId: string, origin: string, body: Buffer) {
+        this.fileId = fileId;
+        this.origin = origin;
+        this.body = body;
     }
 }

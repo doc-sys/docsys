@@ -77,7 +77,7 @@ router
 router
 	.route('/signup/:inviteid')
 	/**
-	 * @api {post} /user/signup/:inviteid
+	 * @api {post} /user/signup/:inviteid User signup with invite
 	 * @apiName userInvite
 	 * @apiGroup User
 	 * @apiDescription New alternative for userSignup. Potential user should recieve a token per mail with that he can join the organistaion.
@@ -91,16 +91,26 @@ router
 		res.status(200).json()
 	})
 
-router.route('/autocomplete').get(async (req, res) => {
-	try {
-		let userList = await user
-			.find()
-			.select('username settings.displayName avatar')
+router
+	.route('/autocomplete')
+	/**
+	 * @api {get} /user/autocomplete Username Autocomplete JSON
+	 * @apiName UserNameAutoComplete
+	 * @apiGroup User
+	 * @apiDescription Gives back the full user list (names and usernames) for use in autocomplete
+	 * @apiSuccess {Array} userList List of user profiles
+	 * @apiError (500) {String} InternalError Something went wrong.
+	 */
+	.get(async (req, res) => {
+		try {
+			let userList = await user
+				.find()
+				.select('username settings.displayName avatar')
 
-		res.status(200).json({ payload: userList })
-	} catch (error) {
-		res.status(500).json({ payload: { message: error.message } })
-	}
-})
+			res.status(200).json({ payload: userList })
+		} catch (error) {
+			res.status(500).json({ payload: { message: error.message } })
+		}
+	})
 
 module.exports = router

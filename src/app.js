@@ -37,9 +37,9 @@ try {
 }
 mongoose.set('useCreateIndex', true)
 
-// Production
-//app.use(compression())
-//app.use(helmet())
+process.env.NODE_ENV === 'production'
+	? app.use(compression()).use(helmet())
+	: null
 
 // logging setup (check if using test env)
 if (process.env.NODE_ENV !== 'test') {
@@ -86,9 +86,9 @@ const authRequired = async (req, res, next) => {
 
 app.use('/user', usersRouter)
 app.use('/admin', adminRouter)
-app.use('/documents', authRequired, docRouter)
-app.use('/settings', authRequired, settingsRouter)
-app.use('/functions', authRequired, helperRouter)
+app.use('/document', authRequired, docRouter)
+app.use('/setting', authRequired, settingsRouter)
+app.use('/function', authRequired, helperRouter)
 app.use('/', indexRouter)
 
 // error handler
