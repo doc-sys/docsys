@@ -3,7 +3,12 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"start": "node ./bin/www",
+		"start": "node ./lib",
+		"type-check": "tsc --noEmit",
+		"type-check:watch": "npm run type-check -- --watch",
+		"build": "npm run build:types && npm run build:js",
+		"build:types": "tsc --emitDeclarationOnly",
+		"build:js": "babel src --out-dir lib --extensions \".ts,.tsx\" --source-maps inline",
 		"test": "nyc --reporter=text mocha ./tests --timeout 10000 --exit",
 		"run": "nodemon",
 		"eslint:github-action": "eslint src/"
@@ -33,6 +38,12 @@
 		"uuid": "^3.4.0"
 	},
 	"devDependencies": {
+		"@babel/cli": "^7.8.4",
+		"@babel/core": "^7.9.0",
+		"@babel/plugin-proposal-class-properties": "^7.8.3",
+		"@babel/preset-env": "^7.9.5",
+		"@babel/preset-typescript": "^7.9.0",
+		"@types/node": "^13.11.1",
 		"chai": "^4.2.0",
 		"chai-http": "^4.3.0",
 		"eslint": "^6.8.0",
@@ -40,6 +51,7 @@
 		"mocha": "^7.1.1",
 		"nyc": "^15.0.1",
 		"prettier": "^2.0.4",
-		"supertest": "^4.0.2"
+		"supertest": "^4.0.2",
+		"typescript": "^3.8.3"
 	}
 }

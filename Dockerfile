@@ -14,6 +14,6 @@ WORKDIR /usr/src/app
 
 COPY --from=0 /usr/src/app/node_modules ./node_modules
 COPY --from=0 /usr/src/app/src ./src
-COPY --from=0 /usr/src/app/bin ./bin
+COPY --from=0 /usr/src/app/lib ./lib
 
-CMD ["node", "./bin/www"]
+CMD ["node", "./lib"]
