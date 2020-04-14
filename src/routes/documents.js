@@ -88,30 +88,6 @@ router
 				let processUID = uuid()
 				let filename = processUID + '.' + filetype.ext
 
-				let writtenFile = fs.writeFile(
-					'./queues/files/' + filename,
-					file.buffer
-				)
-				writtenFile.then(async () => {
-					/* if (filetype.ext == 'pdf') {
-						await convertQueue
-							.createJob({
-								filename: filename,
-								parentUID: uid,
-							})
-							.delayUntil(Date.now() + 3000)
-							.save()
-					} else {
-						await ocrQueue
-							.createJob({
-								filename: filename,
-								parentUID: uid,
-							})
-							.delayUntil(Date.now() + 3000)
-							.save()
-					} */
-				})
-
 				await uploadToS3Directory(
 					process.env.AWS_BUCKET_NAME,
 					uid,
