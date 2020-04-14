@@ -37,9 +37,9 @@ try {
 }
 mongoose.set('useCreateIndex', true)
 
-// Production
-//app.use(compression())
-//app.use(helmet())
+process.env.NODE_ENV === 'production'
+	? app.use(compression()).use(helmet())
+	: null
 
 // logging setup (check if using test env)
 if (process.env.NODE_ENV !== 'test') {
