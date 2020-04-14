@@ -1,4 +1,5 @@
 let mongoose = require('mongoose')
+let storageEngine = require(`../storage/adapters/${process.env.STORAGE_ENGINE}`)
 
 let document = new mongoose.Schema({
 	title: {
@@ -50,10 +51,12 @@ let document = new mongoose.Schema({
 	extension: {
 		type: String,
 	},
-	ocrReady: {
-		type: Boolean,
-		default: false,
-	},
+	pages: [
+		{
+			fileHash: { type: String, required: true },
+			index: { type: Number },
+		},
+	],
 	log: [
 		{
 			timestamp: {
@@ -71,6 +74,20 @@ let document = new mongoose.Schema({
 			},
 		},
 	],
+})
+
+document.methods.addFile = function (buffer, page) {
+	page
+		? storageEngine.add(page, buffer)
+		: storageEngine.add(this.pages.length(), buffer)
+}
+
+document.methods.getFile = function () {
+	return storageEngine.get(this.fileId)
+}
+
+document.post('remove', function (doc) {
+	storageEngine.delete(doc._id)
 })
 
 module.exports = mongoose.model('Doc', document)
