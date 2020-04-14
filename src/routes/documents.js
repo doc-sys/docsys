@@ -14,9 +14,11 @@ var archiver = require('archiver')
 
 var router = express.Router()
 
-// DELETE IN PROD!!!!!
-let delay = require('express-delay')
-router.use(delay(1000))
+// delay responses in production
+if (process.env.NODE_ENV == 'developement') {
+	let delay = require('express-delay')
+	router.use(delay(1000))
+}
 
 var doc = require('../models/document')
 var user = require('../models/user')
