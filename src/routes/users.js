@@ -4,7 +4,6 @@ var router = express.Router()
 
 var user = require('../models/user')
 
-
 router
 	.route('/login')
 	/**
