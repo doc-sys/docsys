@@ -1,7 +1,8 @@
 
 interface StorageAdapter {
-    add(id: string): Promise<string>;
-    get(id: string): Promise<StorageFile>;
+    add(id: string, document: Buffer): Promise<boolean>;
+    addBulk(id: string, documents: Buffer[]): Promise<boolean>
+    get(id: string): Promise<Buffer>;
     delete(id: string): Promise<void>;
     list(id: string): Promise<StorageFile[]>;
 }
