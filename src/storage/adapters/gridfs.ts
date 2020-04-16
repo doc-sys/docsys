@@ -54,4 +54,10 @@ export default class GridFS implements StorageAdapter {
         await this.ready;
         this.bucket.delete(new ObjectId(id));
     }
+
+    async archive(id: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            reject(new Error('The storage backend does not support this function'))
+        })
+    }
 }
