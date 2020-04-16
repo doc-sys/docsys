@@ -52,7 +52,7 @@ describe('User', () => {
 				username: 'test_user',
 				password: 'test_password',
 				mail: 'test@test.de',
-				diplayName: 'Testi Test',
+				displayName: 'Testi Test',
 			}
 
 			chai
@@ -126,7 +126,7 @@ describe('User', () => {
 				.post('/user/login')
 				.send(body)
 				.end((err, res) => {
-					res.should.have.status(401)
+					res.should.have.status(400)
 					res.body.should.be.a('object')
 					res.body.payload.should.have.a.property('message')
 					res.body.payload.message.should.be.a('string')
@@ -141,7 +141,7 @@ describe('User', () => {
 				.post('/user/login')
 				.send(body)
 				.end((err, res) => {
-					res.should.have.status(401)
+					res.should.have.status(400)
 					res.body.should.be.a('object')
 					res.body.payload.should.have.a.property('message')
 					res.body.payload.message.should.be.a('string')
