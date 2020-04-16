@@ -18,16 +18,25 @@ router
 	 * @apiSuccess {String} token API token
 	 * @apiError (401) {String} LoginFailed
 	 */
-	.post(async (req, res) => {
+	.post(async (req, res, next) => {
 		try {
-			if (!req.body || !req.body.username || !req.body.password) {
+			if (
+				!(
+					req.body.hasOwnProperty('username') &&
+					req.body.hasOwnProperty('password')
+				)
+			) {
 				throw new ErrorHandler(400, 'Please provide valid information')
 			}
 
-			let result = await user.getAuthenticated(
-				req.body.username,
-				req.body.password
-			)
+			try {
+				var result = await user.getAuthenticated(
+					req.body.username,
+					req.body.password
+				)
+			} catch (error) {
+				throw new ErrorHandler(401, 'Login data is incorrect')
+			}
 
 			const token = await jwt.sign(result.toJSON(), process.env.JWT_SECRET, {
 				expiresIn: process.env.JWT_EXPIRES,
@@ -35,7 +44,7 @@ router
 
 			res.status(200).json({ payload: { user: result, token: token } })
 		} catch (error) {
-			res.status(401).json({ payload: { message: 'Login failed' } })
+			next(error)
 		}
 	})
 
@@ -55,8 +64,19 @@ router
 	 * @apiError (500) {String} InternalError Something went wrong during signup. Most likely to be during validation.
 	 * @apiDeprecated Users should not be allowed to sign up by themselfes but rather be invited to use docSys
 	 */
-	.post(async (req, res) => {
+	.post(async (req, res, next) => {
 		try {
+			if (
+				!(
+					req.body.hasOwnProperty('username') &&
+					req.body.hasOwnProperty('password') &&
+					req.body.hasOwnProperty('mail') &&
+					req.body.hasOwnProperty('displayName')
+				)
+			) {
+				throw new ErrorHandler(400, 'Please provide valid information')
+			}
+
 			let newUser = new user({
 				username: req.body.username,
 				password: req.body.password,
@@ -75,7 +95,7 @@ router
 
 			res.status(200).json({ payload: { user: newUser, token: token } })
 		} catch (error) {
-			res.status(500).json({ payload: { message: error.message } })
+			next(error)
 		}
 	})
 
