@@ -1,7 +1,8 @@
+import { ReadStream, WriteStream } from 'fs';
+import { Writable } from 'stream';
 
-interface StorageAdapter {
-    add(id: string): Promise<string>;
-    get(id: string): Promise<StorageFile>;
+export default interface StorageAdapter {
+    add(id: ReadStream): Promise<string>;
+    get(id: string, stream: WriteStream): Promise<void>;
     delete(id: string): Promise<void>;
-    list(id: string): Promise<StorageFile[]>;
 }

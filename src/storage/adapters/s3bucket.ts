@@ -1,4 +1,7 @@
 import aws from 'aws-sdk';
+import { ReadStream, WriteStream } from 'fs';
+import { Writable } from 'stream';
+import StorageAdapter from './interface';
 
 class S3Bucket implements StorageAdapter {
     private connection: any;
@@ -9,17 +12,14 @@ class S3Bucket implements StorageAdapter {
             sslEnabled: true,
         });
     }
-    async add(id: string): Promise<string> {
+    async add(id: ReadStream): Promise<string> {
         throw new Error("Method not implemented.");
     }
-    async get(id: string): Promise<StorageFile> {
+    async get(id: string, stream: WriteStream): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    async list(id: string): Promise<StorageFile[]> {
-        throw new Error("Method not implemented.");
-    }
-
     async delete(id: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
+
 }
