@@ -39,7 +39,7 @@ describe('User', () => {
 				.post('/user/signup')
 				.send(body)
 				.end((err, res) => {
-					res.should.have.status(500)
+					res.should.have.status(400)
 					res.body.should.be.a('object')
 					res.body.payload.should.have.a.property('message')
 					res.body.payload.message.should.be.a('string')
