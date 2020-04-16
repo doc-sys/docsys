@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 var express = require('express')
 var jwt = require('jsonwebtoken')
 var router = express.Router()
@@ -91,7 +92,14 @@ router
 				expiresIn: process.env.JWT_EXPIRES,
 			})
 
-			await newUser.save()
+			try {
+				await newUser.save()
+			} catch (error) {
+				throw new ErrorHandler(
+					400,
+					'Please provide valid syntax for your request'
+				)
+			}
 
 			res.status(200).json({ payload: { user: newUser, token: token } })
 		} catch (error) {
