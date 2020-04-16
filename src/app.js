@@ -94,7 +94,7 @@ app.use('/function', authRequired, helperRouter)
 app.use('/', indexRouter)
 
 // error handler
-app.use(function (err, req, res) {
+app.use(function (err, req, res, next) {
 	handleError(err, res)
 })
 
