@@ -2,6 +2,7 @@ var express = require('express')
 var jwt = require('jsonwebtoken')
 var router = express.Router()
 
+var { ErrorHandler } = require('../helpers/error')
 var user = require('../models/user')
 
 router
@@ -19,6 +20,10 @@ router
 	 */
 	.post(async (req, res) => {
 		try {
+			if (!req.body || !req.body.username || !req.body.password) {
+				throw new ErrorHandler(400, 'Please provide valid information')
+			}
+
 			let result = await user.getAuthenticated(
 				req.body.username,
 				req.body.password

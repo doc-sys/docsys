@@ -11,7 +11,9 @@ var fs = require('fs')
 var jwt = require('jsonwebtoken')
 var cors = require('cors')
 
-require('dotenv').config()
+require('dotenv-defaults').config()
+
+const { handleError } = require('./helpers/error')
 
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
@@ -93,8 +95,7 @@ app.use('/', indexRouter)
 
 // error handler
 app.use(function (err, req, res) {
-	// reply with error
-	res.status(err.status || 500).json({ payload: { message: err.message } })
+	handleError(err, res)
 })
 
 module.exports = app
