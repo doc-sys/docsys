@@ -15,7 +15,7 @@ const handleError = (err: ErrorHandler, res: Response) => {
     const { statusCode, message } = err
 
     res.status(statusCode).json({
-        payload: message
+        payload: { message: message }
     })
 }
 
