@@ -56,8 +56,6 @@ export default class GridFS implements StorageAdapter {
     }
 
     async archive(id: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            reject(new Error('The storage backend does not support this function'))
-        })
+        throw 'The storage backend does not support this function';
     }
 }
