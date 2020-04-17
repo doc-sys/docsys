@@ -1,8 +1,7 @@
-name: Run ESLint on Pull Requests
+name: Run ESLint
 
 on:
   - pull_request
-  - push
 
 jobs:
   build:
