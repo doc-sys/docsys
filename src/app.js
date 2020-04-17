@@ -23,7 +23,7 @@ var helperRouter = require('./routes/helper')
 
 var app = express()
 
-console.log(process.env.DB_PATH_TEST)
+console.log('PROCESS' + process.env.DB_PATH_TEST)
 
 try {
 	mongoose.connect(
