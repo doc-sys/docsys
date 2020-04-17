@@ -37,5 +37,5 @@ jobs:
 
       - env:
           CI: true
-          DB_PATH_TEST: 'localhost:27017/docsys'
+          DB_PATH_TEST: 'mongodb://localhost:27017/docsys'
         run: npm test
