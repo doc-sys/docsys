@@ -31,7 +31,27 @@ describe('User', () => {
 				username: 'test_user',
 				password: 'test_password',
 				mail: 'invalid',
-				diplayName: 'Testi Test',
+				displayName: 'Testi Test',
+			}
+
+			chai
+				.request(server)
+				.post('/user/signup')
+				.send(body)
+				.end((err, res) => {
+					res.should.have.status(400)
+					res.body.should.be.a('object')
+					res.body.payload.should.have.a.property('message')
+					res.body.payload.message.should.be.a('string')
+					done()
+				})
+		})
+
+		it('should not create a user with missing fields', (done) => {
+			let body = {
+				username: 'test_user',
+				mail: 'invalid',
+				displayName: 'Testi Test',
 			}
 
 			chai

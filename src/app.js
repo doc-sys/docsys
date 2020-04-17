@@ -17,12 +17,13 @@ const { handleError } = require('./helpers/error')
 
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
-var adminRouter = require('./routes/admin')
 var docRouter = require('./routes/documents')
 var settingsRouter = require('./routes/settings')
 var helperRouter = require('./routes/helper')
 
 var app = express()
+
+console.log('PROCESS' + process.env.DB_PATH_TEST)
 
 try {
 	mongoose.connect(
@@ -35,7 +36,8 @@ try {
 		}
 	)
 } catch (error) {
-	throw new Error(error)
+	console.error(error.message)
+	process.exit(1)
 }
 mongoose.set('useCreateIndex', true)
 
@@ -87,13 +89,13 @@ const authRequired = async (req, res, next) => {
 }
 
 app.use('/user', usersRouter)
-app.use('/admin', adminRouter)
 app.use('/document', authRequired, docRouter)
 app.use('/setting', authRequired, settingsRouter)
 app.use('/function', authRequired, helperRouter)
 app.use('/', indexRouter)
 
 // error handler
+// eslint-disable-next-line no-unused-vars
 app.use(function (err, req, res, next) {
 	handleError(err, res)
 })
