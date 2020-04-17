@@ -17,7 +17,6 @@ const { handleError } = require('./helpers/error')
 
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
-var adminRouter = require('./routes/admin')
 var docRouter = require('./routes/documents')
 var settingsRouter = require('./routes/settings')
 var helperRouter = require('./routes/helper')
@@ -87,7 +86,6 @@ const authRequired = async (req, res, next) => {
 }
 
 app.use('/user', usersRouter)
-app.use('/admin', adminRouter)
 app.use('/document', authRequired, docRouter)
 app.use('/setting', authRequired, settingsRouter)
 app.use('/function', authRequired, helperRouter)
