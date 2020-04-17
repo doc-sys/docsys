@@ -36,7 +36,8 @@ try {
 		}
 	)
 } catch (error) {
-	throw new Error(error)
+	console.error(error.message)
+	process.exit(1)
 }
 mongoose.set('useCreateIndex', true)
 
