@@ -1,7 +1,7 @@
-import StorageAdapter from '../storage/adapters/interface'
+import StorageAdapter from '../lib/storage/adapters/interface'
 import { Request, Response } from 'express'
 //mport * as Storage from `../storage/adapters/${process.env.STORAGE_ENGINE}`
-import getStorage from '../storage/adapters'
+import getStorage from '../lib/storage/adapters'
 import * as stream from 'stream'
 import * as fs from 'fs'
 

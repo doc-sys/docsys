@@ -3,7 +3,7 @@ var express = require('express')
 var jwt = require('jsonwebtoken')
 var router = express.Router()
 
-var { ErrorHandler } = require('../helpers/error')
+var { ErrorHandler } = require('../lib/helpers/error')
 var user = require('../models/user')
 
 router
