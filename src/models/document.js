@@ -50,9 +50,9 @@ let document = new mongoose.Schema({
 	extension: {
 		type: String,
 	},
-	ocrReady: {
-		type: Boolean,
-		default: false,
+	pageHashes: {
+		type: [String],
+		required: true,
 	},
 	log: [
 		{

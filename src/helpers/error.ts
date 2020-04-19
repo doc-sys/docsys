@@ -1,8 +1,8 @@
 import { Response } from 'express'
 
 class ErrorHandler extends Error {
-    statusCode: number
-    message: string
+    public statusCode: number
+    public message: string
 
     constructor(statusCode: number, message: string) {
         super()
@@ -12,10 +12,8 @@ class ErrorHandler extends Error {
 }
 
 const handleError = (err: ErrorHandler, res: Response) => {
-    const { statusCode, message } = err
-
-    res.status(statusCode).json({
-        payload: { message: message }
+    res.status(400).json({
+        payload: { message: err.message }
     })
 }
 
