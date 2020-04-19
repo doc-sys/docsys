@@ -1,18 +1,20 @@
+import StorageAdapter from '../storage/adapters/interface'
+import { Request, Response } from 'express'
+//mport * as Storage from `../storage/adapters/${process.env.STORAGE_ENGINE}`
+import getStorage from '../storage/adapters'
+import * as stream from 'stream'
+import * as fs from 'fs'
+
+let storage = getStorage()
+
 var express = require('express')
 var multer = require('multer')
-var aws = require('aws-sdk')
 var uuid = require('uuid/v4')
 var ftype = require('file-type')
-var fs = require('fs').promises
 var archiver = require('archiver')
-// const Queue = require('bee-queue')
-
-// const mailQueue = new Queue('mail', {
-// 	activateDelayedJobs: true,
-// 	redis: { url: process.env.REDIS_URL },
-// })
 
 var router = express.Router()
+var ErrorHandler = require('../helpers/error')
 
 // delay responses in developement
 if (process.env.NODE_ENV == 'developement') {
@@ -25,12 +27,6 @@ var user = require('../models/user')
 
 const ALLOWED_FILETYPES = ['pdf', 'jpg', 'jpeg', 'png', 'tiff']
 
-var s3 = new aws.S3({
-	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-	sslEnabled: true,
-})
-
 var upload = multer({
 	storage: multer.memoryStorage(),
 })
@@ -42,7 +38,7 @@ var upload = multer({
  * @apiDescription Returns the users documents
  * @apiSuccess {Array} ownDocs User documents basic metadata
  */
-router.get('/own', async (req, res) => {
+router.get('/own', async (req: any, res: Response) => {
 	try {
 		let ownDocs = await doc
 			.find({ owner: req.user._id })
@@ -62,7 +58,7 @@ router.get('/own', async (req, res) => {
  * @apiDescription Returns the documents shared with the user
  * @apiSuccess {Array} sharedDocs Shared documents basic metadata
  */
-router.get('/shared', async (req, res) => {
+router.get('/shared', async (req: any, res: Response) => {
 	let sharedDocs = await doc
 		.find({ sharedWith: req.user._id })
 		.sort('-dated')
@@ -74,7 +70,7 @@ router.get('/shared', async (req, res) => {
 
 router
 	.route('/')
-	.get(async (req, res) => {
+	.get(async (req: any, res: Response) => {
 		let ownDocs = await doc
 			.find({ owner: req.user._id })
 			.sort('-dated')
@@ -101,69 +97,43 @@ router
 	 * @apiSuccess {String} message Confirming upload
 	 * @apiError (500) {String} InternalError Something went wrong
 	 */
-	.post(upload.array('documents'), async (req, res) => {
+	.post(upload.array('documents'), async (req: any, res: Response, next: any) => {
 		try {
 			let uid = uuid()
 			let filetype = await ftype.fromBuffer(req.files[0].buffer)
 
 			if (!ALLOWED_FILETYPES.includes(filetype.ext)) {
-				throw new Error('Filetype not supported')
+				throw new ErrorHandler(415, 'Filetype not supported')
 			}
-
-			req.files.forEach(async (file, index) => {
-				let processUID = uuid()
-				let filename = processUID + '.' + filetype.ext
-
-				let writtenFile = fs.writeFile(
-					'./queues/files/' + filename,
-					file.buffer
-				)
-				writtenFile.then(async () => {
-					/* if (filetype.ext == 'pdf') {
-						await convertQueue
-							.createJob({
-								filename: filename,
-								parentUID: uid,
-							})
-							.delayUntil(Date.now() + 3000)
-							.save()
-					} else {
-						await ocrQueue
-							.createJob({
-								filename: filename,
-								parentUID: uid,
-							})
-							.delayUntil(Date.now() + 3000)
-							.save()
-					} */
-				})
-
-				await uploadToS3Directory(
-					process.env.AWS_BUCKET_NAME,
-					uid,
-					file.buffer,
-					filetype.mime,
-					index
-				)
-			})
 
 			let uploadedFile = new doc({
 				title: req.body.title,
 				created: req.body.dated,
 				fileId: uid,
-				owner: req.session.user._id,
+				owner: req.user._id,
 				mime: filetype.mime,
 				extension: filetype.ext,
 				log: [],
+				pageHashes: [],
 			})
 
 			uploadedFile.log.push({
 				message: 'Document created',
-				user: req.session.user._id,
+				user: req.user._id,
 			})
 			uploadedFile.log.push({
 				message: req.body.comment,
-				user: req.session.user._id,
+				user: req.user._id,
+			})
+
+			console.log(storage)
+
+			req.files.forEach(async (file: any, index: number) => {
+				let bStream = new stream.PassThrough()
+				bStream.end(file.buffer)
+
+				let pageId = await storage.add(bStream)
+				uploadedFile.pageHashes.push(pageId)
 			})
 
 			await uploadedFile.save()
@@ -172,9 +142,7 @@ router
 				.status(200)
 				.json({ payload: { message: `Uploaded ${req.files.length} files` } })
 		} catch (error) {
-			res.status(500).json({
-				payload: { message: error },
-			})
+			next(error)
 		}
 	})
 
@@ -189,7 +157,7 @@ router
 	 * @apiSuccess (200) {Stream} ZIP file stream
 	 * @apiError (401) PermissionError Not allowed to GET this file
 	 */
-	.get(async (req, res) => {
+	.get(async (req: any, res: Response) => {
 		let file = await doc
 			.findOne({ fileId: req.params.fileid })
 			.populate('owner')
@@ -199,7 +167,7 @@ router
 		if (
 			!(
 				req.user.username == file.owner.username ||
-				file.sharedWith.includes(req.session.user)
+				file.sharedWith.includes(req.user)
 			) ||
 			file.locked
 		) {
@@ -208,7 +176,7 @@ router
 				.json({ payload: { message: 'Not allowed to download file' } })
 		} else {
 			file.lockedBy = req.user
-			//file.locked = true
+			file.locked = true
 			await file.save()
 
 			res.writeHead(200, {
@@ -216,27 +184,18 @@ router
 				'Content-disposition': 'attachement; filename=files.zip',
 			})
 
-			let objects = await s3
-				.listObjects({
-					Bucket: process.env.AWS_BUCKET_NAME,
-					Prefix: req.params.fileid,
-				})
-				.promise()
-
 			let zip = await archiver('zip')
 
 			await Promise.all(
-				objects.Contents.map(async ({ Key }, i) => {
-					let downloadedFile = await s3
-						.getObject({
-							Bucket: process.env.AWS_BUCKET_NAME,
-							Key: Key,
-						})
-						.promise()
-
-					await zip.append(downloadedFile.Body, {
-						name: file.fileId + '-' + i + '.' + file.extension,
+				file.pageHashes.map(async (pageId: string, i: number) => {
+					let buf = new Buffer(0)
+					stream.on('data', (d) => {
+						buf = Buffer.concat([buf, d])
 					})
+
+					await storage.get(pageId, zip)
+
+					zip.append()
 				})
 			)
 
@@ -248,21 +207,9 @@ router
 	/**
 	 * @api {post} /document/checkout/:fileid
 	 */
-	.post(upload.array('documents'), async (req, res) => {
+	.post(upload.array('documents'), async (req: any, res: Response) => {
 		try {
 			let file = await doc.findOne({ fileId: req.params.fileid })
-
-			await emptyS3Directory(process.env.AWS_BUCKET_NAME, req.params.fileid)
-
-			req.files.forEach((f, index) => {
-				uploadToS3Directory(
-					process.env.AWS_BUCKET_NAME,
-					file.fileId,
-					f.buffer,
-					file.mime,
-					index
-				)
-			})
 
 			req.flash('success', `Uploaded ${req.files.length} files`)
 			res.redirect(req.originalUrl)
@@ -272,7 +219,7 @@ router
 		}
 	})
 
-router.route('/share/:fileid').post(async (req, res) => {
+router.route('/share/:fileid').post(async (req: any, res: Response) => {
 	let fileid = req.params.fileid
 	let document = await doc.findOne({ fileId: fileid }).populate('owner')
 	let sharedUser = await user.findOne({ username: req.body.shareUsername })
@@ -289,22 +236,11 @@ router.route('/share/:fileid').post(async (req, res) => {
 	}
 
 	res.status(200).json({ payload: { message: 'Successfully shared' } })
-	/* mailQueue.createJob({
-		to: sharedUser.mail,
-		subject: `${document.owner.settings.displayName} shared a file with you`,
-		payload: {
-			filename: document.title,
-			avatar: document.owner.avatar,
-			username: document.owner.settings.displayName,
-			url_to_open: `${process.env.HOST}/view/${document.fileId}`,
-			host_url: process.env.HOST,
-		},
-	}) */
 })
 
 router
 	.route('/:fileid')
-	.get(async (req, res) => {
+	.get(async (req: any, res: Response) => {
 		let result = await doc
 			.findOne({ fileId: req.params.fileid })
 			.populate('owner')
@@ -313,87 +249,14 @@ router
 			.populate('log.user')
 		res.status(200).json({ payload: result })
 	})
-	.delete(async (req, res) => {
+	.delete(async (req: any, res: Response) => {
 		try {
 			await doc.deleteOne({ fileId: req.params.fileid })
 
-			await emptyS3Directory(process.env.AWS_BUCKET_NAME, req.params.fileid)
 
-			let deletePromise = s3
-				.deleteObject({
-					Bucket: process.env.AWS_BUCKET_NAME,
-					Key: req.params.fileid,
-				})
-				.promise()
-
-			deletePromise
-				.then(() => {
-					res.status(200).json({ payload: { message: 'File deleted' } })
-				})
-				.catch((e) => {
-					throw e
-				})
 		} catch (error) {
 			res.status(401).json({ payload: { message: 'Couldnt delete file' } })
 		}
 	})
-
-// HELPER FUNC
-
-/**
- * Empties the directory on the given AWS S3 Bucket.
- * @param {String} bucket
- * @param {String} dir
- */
-async function emptyS3Directory(bucket, dir) {
-	const listParams = {
-		Bucket: bucket,
-		Prefix: dir,
-	}
-
-	const listedObjects = await s3.listObjectsV2(listParams).promise()
-
-	if (listedObjects.Contents.length === 0) return
-
-	const deleteParams = {
-		Bucket: bucket,
-		Delete: { Objects: [] },
-	}
-
-	listedObjects.Contents.forEach(({ Key }) => {
-		deleteParams.Delete.Objects.push({ Key })
-	})
-
-	await s3.deleteObjects(deleteParams).promise()
-
-	if (listedObjects.IsTruncated) await emptyS3Directory(bucket, dir)
-}
-
-/**
- * Uploads all files in @param files to the Bucket and into the directory
- * @param {String} bucket
- * @param {String} dir
- * @param {Buffer} files
- * @param {String} mime
- * @param {Number} index
- */
-async function uploadToS3Directory(bucket, dir, data, mime, index) {
-	let upload = s3
-		.upload({
-			Bucket: bucket,
-			Key: dir + '/' + index,
-			Body: data,
-			ContentType: mime,
-		})
-		.promise()
-
-	upload
-		.then(() => {
-			return true
-		})
-		.catch((e) => {
-			throw new Error(e)
-		})
-}
 
 module.exports = router

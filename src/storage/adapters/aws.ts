@@ -2,8 +2,9 @@ import aws, { S3 } from 'aws-sdk';
 import { v4 as uuid } from 'uuid'
 import { ReadStream, WriteStream } from 'fs';
 import StorageAdapter from './interface';
+import { Readable } from 'stream';
 
-class S3Bucket implements StorageAdapter {
+export default class AWS implements StorageAdapter {
     private connection: aws.S3
     private bucket_name: string
 
@@ -22,7 +23,7 @@ class S3Bucket implements StorageAdapter {
         this.bucket_name = process.env.AWS_BUCKET_NAME
     }
 
-    async add(stream: ReadStream): Promise<string> {
+    async add(stream: Readable): Promise<string> {
         const fileId = uuid()
         const params: aws.S3.PutObjectRequest = { Bucket: this.bucket_name, Key: fileId, Body: stream, StorageClass: process.env.AWS_INTELLIGENT_TIERING ? 'INTELLIGENT_TIERING' : 'STANDARD' }
         return new Promise((resolve, reject) => {

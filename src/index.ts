@@ -2,7 +2,7 @@
  * Module dependencies.
  */
 
-var app = require('../src/app')
+var app = require('./app')
 var debug = require('debug')('docsys:server')
 var http = require('http')
 
