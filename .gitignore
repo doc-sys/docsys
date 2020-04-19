@@ -5,4 +5,4 @@ access.log
 task_server
 .nyc_output
 coverage
-lib
+./lib
