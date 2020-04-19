@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from 'express'
+
 var express = require('express')
 var path = require('path')
 var logger = require('morgan')
@@ -22,8 +24,6 @@ var settingsRouter = require('./routes/settings')
 var helperRouter = require('./routes/helper')
 
 var app = express()
-
-console.log('PROCESS' + process.env.DB_PATH_TEST)
 
 try {
 	mongoose.connect(
@@ -96,7 +96,7 @@ app.use('/', indexRouter)
 
 // error handler
 // eslint-disable-next-line no-unused-vars
-app.use(function (err, req, res, next) {
+app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
 	handleError(err, res)
 })
 
