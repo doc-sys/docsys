@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { handleError } from './lib/helpers/error';
 
 var express = require('express')
 var path = require('path')
@@ -15,10 +16,8 @@ var cors = require('cors')
 
 require('dotenv-defaults').config()
 
-const { handleError } = require('./helpers/error')
-
 var indexRouter = require('./routes/index')
-var usersRouter = require('./routes/users')
+var usersRouter = require('./routes/user.route')
 var docRouter = require('./routes/documents')
 var settingsRouter = require('./routes/settings')
 var helperRouter = require('./routes/helper')

@@ -14,7 +14,7 @@ var ftype = require('file-type')
 var archiver = require('archiver')
 
 var router = express.Router()
-var ErrorHandler = require('../helpers/error')
+var ErrorHandler = require('../lib/helpers/error')
 
 // delay responses in developement
 if (process.env.NODE_ENV == 'developement') {

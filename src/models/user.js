@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 let mongoose = require('mongoose')
-let bcrypt = require('bcrypt')
+let bcrypt = require('bcryptjs')
 let sharp = require('sharp')
 
 const SALT_FACTOR = 10
@@ -175,4 +175,4 @@ function validateMail(mail) {
 	return re.test(mail)
 }
 
-module.exports = mongoose.model('User', user)
+module.exports = { user: mongoose.model('User', user) }
