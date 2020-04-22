@@ -18,7 +18,7 @@ require('dotenv-defaults').config()
 
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/user.route')
-var docRouter = require('./routes/documents')
+var docRouter = require('./routes/document.route')
 var settingsRouter = require('./routes/settings')
 var helperRouter = require('./routes/helper')
 
@@ -66,31 +66,10 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// auth middleware
-const authRequired = async (req, res, next) => {
-	try {
-		let token
-
-		if (req.query.token) {
-			token = req.query.token
-		} else {
-			let authHeader = req.headers.authorization
-			token = authHeader.split(' ')[1]
-		}
-
-		let result = await jwt.verify(token, process.env.JWT_SECRET)
-		req.user = result
-
-		next()
-	} catch (error) {
-		res.status(500).json({ payload: { message: 'Unauthorized access' } })
-	}
-}
-
 app.use('/user', usersRouter)
-app.use('/document', authRequired, docRouter)
-app.use('/setting', authRequired, settingsRouter)
-app.use('/function', authRequired, helperRouter)
+app.use('/document', docRouter)
+app.use('/setting', settingsRouter)
+app.use('/function', helperRouter)
 app.use('/', indexRouter)
 
 // error handler
