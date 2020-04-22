@@ -16,7 +16,7 @@ export default async function authenticate(req: any, res: Response, next: NextFu
 
         let result = await jwt.verify(token, process.env.JWT_SECRET)
 
-        res.locals.user = result
+        res.locals.auth_user = result
 
         next()
     } catch (error) {
