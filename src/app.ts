@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { handleError } from './lib/helpers/error';
+import { handleError, ErrorHandler } from './lib/helpers/error';
 
 var express = require('express')
 var path = require('path')
@@ -95,8 +95,12 @@ app.use('/', indexRouter)
 
 // error handler
 // eslint-disable-next-line no-unused-vars
-app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
+app.use(function (err: ErrorHandler, req: Request, res: Response, next: NextFunction) {
 	handleError(err, res)
+})
+
+app.use((req, res) => {
+	res.status(404).json({ error: 'Route not found' })
 })
 
 module.exports = app

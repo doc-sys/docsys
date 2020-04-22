@@ -11,15 +11,19 @@ export default async function authenticate(req: any, res: Response, next: NextFu
         let token = req.query.token || req.headers.authorization!.split(' ')[1] || undefined
 
         if (token === undefined || token === null) {
-            throw new ErrorHandler(402, 'API Token must either be set as header or query string')
+            return next(new ErrorHandler(402, 'API Token must either be set as header or query string'))
         }
 
         let result = await jwt.verify(token, process.env.JWT_SECRET)
 
-        req.user = result
+        res.locals.user = result
 
         next()
     } catch (error) {
-        next(error)
+        return next(new ErrorHandler(500, `Error checking permission: ${(error as Error).message}`))
     }
+}
+
+export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+    res.locals.user.isAdmin ? next() : next(new ErrorHandler(401, 'You have to be an administrator to do this.'))
 }
