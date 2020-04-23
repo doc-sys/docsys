@@ -26,6 +26,7 @@
 		"dotenv": "^8.2.0",
 		"dotenv-defaults": "^1.1.1",
 		"express": "~4.16.1",
+		"express-validator": "^6.4.0",
 		"file-type": "^13.1.2",
 		"handlebars": "^4.7.6",
 		"helmet": "^3.21.3",

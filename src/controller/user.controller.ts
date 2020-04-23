@@ -75,6 +75,7 @@ export const addUser = async (req: Request, res: Response, next: NextFunction) =
 
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        delete req.body.lockUntil, req.body.loginAttempts, req.body.admin
         let updatedUser = await user.findOneAndUpdate({ username: req.body.username || req.params.username }, req.body, { new: true })
         res.locals.user = updatedUser
     } catch (error) {
