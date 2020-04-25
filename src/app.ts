@@ -19,8 +19,7 @@ require('dotenv-defaults').config()
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/user.route')
 var docRouter = require('./routes/document.route')
-var settingsRouter = require('./routes/settings')
-var helperRouter = require('./routes/helper')
+
 
 var app = express()
 
@@ -68,8 +67,6 @@ app.use(express.urlencoded({ extended: true }))
 
 app.use('/user', usersRouter)
 app.use('/document', docRouter)
-app.use('/setting', settingsRouter)
-app.use('/function', helperRouter)
 app.use('/', indexRouter)
 
 // error handler
