@@ -3,13 +3,12 @@ import { fromBuffer as filetypeFromBuffer } from 'file-type'
 import { PassThrough } from 'stream'
 import * as archive from 'archiver'
 
-import { ErrorHandler } from '../lib/helpers/error';
+import { ErrorHandler } from '../lib/helpers/error'
 import getStorage from '../lib/storage/adapters'
 
 const storage = getStorage()
 
 import { doc } from '../models/document'
-import { Response } from "aws-sdk";
 
 let router = express.Router()
 

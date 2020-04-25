@@ -5,9 +5,9 @@ import * as multer from 'multer'
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
 import { getAllDocuments, createNewDocument, uploadFiles, getOwnDocuments, getSharedDocuments, checkPermissionToFile, lockFile, getSingleDocument, downloadFile, unlockFile, shareFile, checkFileOwnership } from '../controller/document.controller';
 
-import createNew from '../requestSchemas/document.createNew.json'
-import checkout from '../requestSchemas/document.checkout.json'
-import share from '../requestSchemas/document.share.json'
+import createNew from '../lib/requestSchemas/document.createNew.json'
+import checkout from '../lib/requestSchemas/document.checkout.json'
+import share from '../lib/requestSchemas/document.share.json'
 
 let router = express.Router()
 let uploadFileHandler = multer({
