@@ -1,0 +1,12 @@
+{
+	"username": {
+		"in": ["body", "query"],
+		"isString": true,
+		"errorMessage": "Please provide a username with your request"
+	},
+	"password": {
+		"in": ["body", "query"],
+		"isString": true,
+		"errorMessage": "Please provide a password with your request"
+	}
+}

@@ -1,7 +1,12 @@
 let express = require('express')
+import { checkSchema } from 'express-validator'
 
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
 import { checkPropertyMail, checkPropertyName, checkPropertyPassword, checkPropertyUsername, authenticateUser, addUser, findUser, getAllUser, deleteUser, unlockUser, updateUser } from '../controller/user.controller';
+
+import signup from '../lib/requestSchemas/user.createNew.json'
+import login from '../lib/requestSchemas/user.login.json'
+import username from '../lib/requestSchemas/user.username.json'
 
 let router = express.Router()
 
@@ -29,7 +34,7 @@ router.route('/:username')
      * @apiSuccess {Object} user User profile
      * @apiError (401) {String} AuthentificationError Not allowed to access ressource
      */
-    .get([authenticate, checkPropertyUsername, findUser], (req, res) => {
+    .get([authenticate, checkSchema(username as any), findUser], (req, res) => {
         res.status(200).json({ user: res.locals.user })
     })
     /**
@@ -41,7 +46,7 @@ router.route('/:username')
      * @apiSuccess {Object} user Username
      * @apiError (401) {String} AuthentificationError Not allowed to access ressource
      */
-    .delete([authenticate, requireAdmin, checkPropertyUsername, deleteUser], (req, res) => {
+    .delete([authenticate, requireAdmin, checkSchema(username as any), deleteUser], (req, res) => {
         res.status(200).json({ user: res.locals.user })
     })
     /**
@@ -53,7 +58,7 @@ router.route('/:username')
      * @apiSuccess {Object} user Updated user object
      * @apiError (401) {String} AuthentificationError Not allowed to access ressource
      */
-    .post([authenticate, checkPropertyUsername, updateUser], (req, res) => {
+    .post([authenticate, checkSchema(username as any), updateUser], (req, res) => {
         res.status(200).json({ user: res.locals.user })
     })
 
@@ -69,7 +74,7 @@ router.route('/login')
      * @apiSuccess {String} token API token
      * @apiError (401) {String} LoginFailed
      */
-    .post([checkPropertyUsername, checkPropertyPassword, authenticateUser], (req, res) => {
+    .post([checkSchema(login as any), authenticateUser], (req, res) => {
         res.status(200).json({ user: res.locals.user, token: res.locals.token })
     })
 
@@ -88,7 +93,7 @@ router.route('/signup')
      * @apiError (500) {String} InternalError Something went wrong during signup. Most likely to be during validation.
      * @apiDeprecated Users should not be allowed to sign up by themselfes but rather be invited to use docSys
      */
-    .post([checkPropertyUsername, checkPropertyMail, checkPropertyName, checkPropertyPassword, addUser, authenticateUser], (req, res) => {
+    .post([checkSchema(signup as any), addUser, authenticateUser], (req, res) => {
         res.status(200).json({ user: res.locals.user, token: res.locals.token })
     })
 
@@ -102,7 +107,7 @@ router.route('/unlock/:username')
          * @apiSuccess {Object} user User profile
          * @apiError (401) {String} AuthentificationError Not allowed to access ressource
          */
-    .post([authenticate, requireAdmin, checkPropertyUsername, unlockUser], (req, res) => {
+    .post([authenticate, requireAdmin, checkSchema(username as any), unlockUser], (req, res) => {
         res.status(200).json({ user: res.locals.user })
     })
 

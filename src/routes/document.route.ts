@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express"
-import { check, checkSchema } from 'express-validator'
+import { checkSchema } from 'express-validator'
 import * as multer from 'multer'
 
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
@@ -40,7 +40,7 @@ router.route('/')
     * @apiError (415) {String} FileTypeError Filetype is not supported. So far only PDFs and picture types are supported
     * @apiError (500) {String} InternalError Something went wrong
     */
-    .post([authenticate, checkSchema(createNew), createNewDocument, uploadFileHandler.array('documents'), uploadFiles], (req, res) => {
+    .post([authenticate, checkSchema(createNew as any), createNewDocument, uploadFileHandler.array('documents'), uploadFiles], (req, res) => {
         res.status(200).json({ document: res.locals.doc })
     })
 

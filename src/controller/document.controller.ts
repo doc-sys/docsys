@@ -12,11 +12,6 @@ import { doc } from '../models/document'
 
 let router = express.Router()
 
-//CheckPropertyHandler
-export const checkPropertyUsername = (req: Request, res: Response, next: NextFunction): void => {
-    req.body.hasOwnProperty('username') || req.params.hasOwnProperty('username') ? next() : next(new ErrorHandler(400, 'Please provide a username'))
-}
-
 //Model Find Operations
 export const getOwnDocuments = async (req: Request, res: Response, next: NextFunction) => {
     if (!res.locals.auth_user) return next(new ErrorHandler(500, "Can't access user property"))

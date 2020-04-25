@@ -3,23 +3,6 @@ import { ErrorHandler } from '../lib/helpers/error';
 import { user } from '../models/user'
 import * as jwt from 'jsonwebtoken'
 
-//CheckPropertyHandler
-export const checkPropertyUsername = (req: Request, res: Response, next: NextFunction): void => {
-    req.body.hasOwnProperty('username') || req.params.hasOwnProperty('username') ? next() : next(new ErrorHandler(400, 'Please provide a username'))
-}
-
-export const checkPropertyPassword = (req: Request, res: Response, next: NextFunction): void => {
-    req.body.hasOwnProperty('password') || req.params.hasOwnProperty('password') ? next() : next(new ErrorHandler(400, 'Please provide a password'))
-}
-
-export const checkPropertyMail = (req: Request, res: Response, next: NextFunction): void => {
-    req.body.hasOwnProperty('mail') || req.params.hasOwnProperty('mail') ? next() : next(new ErrorHandler(400, 'Please provide a mail address'))
-}
-
-export const checkPropertyName = (req: Request, res: Response, next: NextFunction): void => {
-    req.body.hasOwnProperty('displayName') || req.params.hasOwnProperty('displayname') ? next() : next(new ErrorHandler(400, 'Please provide a display name'))
-}
-
 //ModelOperations
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
     let username = req.body.username || req.params.username || res.locals.user.username
