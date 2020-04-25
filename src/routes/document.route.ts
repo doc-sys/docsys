@@ -51,7 +51,9 @@ router.route('/:fileid')
      * @apiGroup Document
      * @apiDescription Returns the single requested document
      * @apiParam {String} fileid The fileid as part of the GET URL
-     * @api
+     * @apiSuccess {Object} document The requested object
+     * @apiError (401) {String} PermissionError Not allowed to GET this file
+     * @apiError (500) {String} InternalError Something went wrong
      */
     .get([authenticate, getSingleDocument, checkFileOwnership], (req, res) => {
         res.status(200).json({ doc: res.locals.doc })
@@ -64,6 +66,8 @@ router.route('/own')
      * @apiGroup Document
      * @apiDescription Returns the users documents
      * @apiSuccess {Array} docs User documents basic metadata
+     * @apiError (401) {String} PermissionError Not allowed to GET this file
+     * @apiError (500) {String} InternalError Something went wrong
      */
     .get([authenticate, getOwnDocuments], (req, res) => {
         res.status(200).json({ docs: res.locals.docs })
@@ -76,6 +80,8 @@ router.route('/shared')
      * @apiGroup Document
      * @apiDescription Returns the documents shared with the user
      * @apiSuccess {Array} sharedDocs Shared documents basic metadata
+     * @apiError (401) {String} PermissionError Not allowed to GET this file
+     * @apiError (500) {String} InternalError Something went wrong
      */
     .get([authenticate, getSharedDocuments], (req, res) => {
         res.status(200).json({ docs: res.locals.docs })
@@ -90,6 +96,7 @@ router.route('/checkout/:fileid')
      * @apiParam {String} fileid The fileid as part of the GET URL
      * @apiSuccess (200) {Stream} ZIP file stream
      * @apiError (401) PermissionError Not allowed to GET this file
+     * @apiError (500) {String} InternalError Something went wrong
      */
     .get([authenticate, checkSchema(checkout), getSingleDocument, checkPermissionToFile, lockFile, downloadFile], (req, res) => {
         res.locals.zip.pipe(res)
@@ -103,6 +110,7 @@ router.route('/checkout/:fileid')
      * @apiParam {String} fileid The fileid as part of the POST URL
      * @apiSuccess (200) {Object} The uploaded document
      * @apiError (401) PermissionError Not allowed to POST this file
+     * @apiError (500) {String} InternalError Something went wrong
      */
     .post([authenticate, checkSchema(checkout as any), getSingleDocument, checkPermissionToFile, uploadFileHandler.array('documents'), uploadFiles, unlockFile], (req, res) => {
         res.status(200).json({ doc: res.locals.doc })
@@ -115,6 +123,7 @@ router.route('/checkout/:fileid')
     * @apiParam {String} fileid The fileid as part of the POST URL
     * @apiSuccess (200) {Object} The unlocked document
     * @apiError (401) PermissionError Not allowed to UNLOCK this file
+    * @apiError (500) {String} InternalError Something went wrong
     */
     .unlock([authenticate, requireAdmin, checkSchema(checkout), getSingleDocument, unlockFile], (req, res) => {
         res.status(200).json({ doc: res.locals.doc })
@@ -130,6 +139,7 @@ router.route('/share/:fileid')
      * @apiParam {String} whoToShare Username to share the file with. Provided in body or query.
      * @apiSuccess (200) {Object} The updated document
      * @apiError (401) PermissionError Not allowed to edit this file
+     * @apiError (500) {String} InternalError Something went wrong
      */
     .post([authenticate, checkSchema(share), getSingleDocument, shareFile], (req, res) => {
         res.status(200).json({ doc: res.locals.doc })
