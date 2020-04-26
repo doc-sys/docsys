@@ -10,8 +10,6 @@ const storage = getStorage()
 
 import { doc } from '../models/document'
 
-let router = express.Router()
-
 //Model Find Operations
 export const getOwnDocuments = async (req: Request, res: Response, next: NextFunction) => {
     if (!res.locals.auth_user) return next(new ErrorHandler(500, "Can't access user property"))
@@ -167,5 +165,3 @@ export const shareFile = async (req: Request, res: Response, next: NextFunction)
 
     next()
 }
-
-module.exports = router

@@ -3,13 +3,12 @@ import { ErrorHandler } from '../lib/helpers/error';
 import { user } from '../models/user'
 import * as jwt from 'jsonwebtoken'
 
+import { validationResult } from 'express-validator'
+
 //ModelOperations
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
     let username = req.body.username || req.params.username || res.locals.user.username
     let password = req.body.password || req.params.password || res.locals.user.password
-
-    if (username === undefined) return next(new ErrorHandler(400, 'Please provide a username'))
-    if (password === undefined) return next(new ErrorHandler(400, 'Please provide a password'))
 
     try {
         var result = await user.getAuthenticated(

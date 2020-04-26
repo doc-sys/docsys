@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from "express"
 import { checkSchema } from 'express-validator'
-import * as multer from 'multer'
+const multer = require('multer')
 
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
 import { getAllDocuments, createNewDocument, uploadFiles, getOwnDocuments, getSharedDocuments, checkPermissionToFile, lockFile, getSingleDocument, downloadFile, unlockFile, shareFile, checkFileOwnership } from '../controller/document.controller';
@@ -8,6 +8,7 @@ import { getAllDocuments, createNewDocument, uploadFiles, getOwnDocuments, getSh
 import createNew from '../lib/requestSchemas/document.createNew.json'
 import checkout from '../lib/requestSchemas/document.checkout.json'
 import share from '../lib/requestSchemas/document.share.json'
+import { checkSchemaValidation } from '../lib/helpers/validator';
 
 let router = express.Router()
 let uploadFileHandler = multer({
@@ -40,7 +41,7 @@ router.route('/')
     * @apiError (415) {String} FileTypeError Filetype is not supported. So far only PDFs and picture types are supported
     * @apiError (500) {String} InternalError Something went wrong
     */
-    .post([authenticate, checkSchema(createNew as any), createNewDocument, uploadFileHandler.array('documents'), uploadFiles], (req, res) => {
+    .post([authenticate, checkSchema(createNew as any), checkSchemaValidation, createNewDocument, uploadFileHandler.array('documents'), uploadFiles], (req, res) => {
         res.status(200).json({ document: res.locals.doc })
     })
 
@@ -98,7 +99,7 @@ router.route('/checkout/:fileid')
      * @apiError (401) PermissionError Not allowed to GET this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .get([authenticate, checkSchema(checkout), getSingleDocument, checkPermissionToFile, lockFile, downloadFile], (req, res) => {
+    .get([authenticate, checkSchema(checkout), checkSchemaValidation, getSingleDocument, checkPermissionToFile, lockFile, downloadFile], (req, res) => {
         res.locals.zip.pipe(res)
         res.locals.zip.finalize()
     })
@@ -112,7 +113,7 @@ router.route('/checkout/:fileid')
      * @apiError (401) PermissionError Not allowed to POST this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .post([authenticate, checkSchema(checkout as any), getSingleDocument, checkPermissionToFile, uploadFileHandler.array('documents'), uploadFiles, unlockFile], (req, res) => {
+    .post([authenticate, checkSchema(checkout as any), checkSchemaValidation, getSingleDocument, checkPermissionToFile, uploadFileHandler.array('documents'), uploadFiles, unlockFile], (req, res) => {
         res.status(200).json({ doc: res.locals.doc })
     })
     /**
@@ -125,7 +126,7 @@ router.route('/checkout/:fileid')
     * @apiError (401) PermissionError Not allowed to UNLOCK this file
     * @apiError (500) {String} InternalError Something went wrong
     */
-    .unlock([authenticate, requireAdmin, checkSchema(checkout), getSingleDocument, unlockFile], (req, res) => {
+    .unlock([authenticate, requireAdmin, checkSchema(checkout), checkSchemaValidation, getSingleDocument, unlockFile], (req, res) => {
         res.status(200).json({ doc: res.locals.doc })
     })
 
@@ -141,7 +142,7 @@ router.route('/share/:fileid')
      * @apiError (401) PermissionError Not allowed to edit this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .post([authenticate, checkSchema(share), getSingleDocument, shareFile], (req, res) => {
+    .post([authenticate, checkSchema(share), checkSchemaValidation, getSingleDocument, shareFile], (req, res) => {
         res.status(200).json({ doc: res.locals.doc })
     })
 

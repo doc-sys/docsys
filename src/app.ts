@@ -16,7 +16,7 @@ var cors = require('cors')
 
 require('dotenv-defaults').config()
 
-var indexRouter = require('./routes/index')
+var indexRouter = require('./routes/index.route')
 var usersRouter = require('./routes/user.route')
 var docRouter = require('./routes/document.route')
 

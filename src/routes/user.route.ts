@@ -2,11 +2,12 @@ let express = require('express')
 import { checkSchema } from 'express-validator'
 
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
-import { checkPropertyMail, checkPropertyName, checkPropertyPassword, checkPropertyUsername, authenticateUser, addUser, findUser, getAllUser, deleteUser, unlockUser, updateUser } from '../controller/user.controller';
+import { authenticateUser, addUser, findUser, getAllUser, deleteUser, unlockUser, updateUser } from '../controller/user.controller';
 
 import signup from '../lib/requestSchemas/user.createNew.json'
 import login from '../lib/requestSchemas/user.login.json'
 import username from '../lib/requestSchemas/user.username.json'
+import { checkSchemaValidation } from '../lib/helpers/validator';
 
 let router = express.Router()
 
@@ -19,46 +20,7 @@ router.route('/')
      * @apiSuccess {Array} user List of user profiles
      * @apiError (500) {String} InternalError Something went wrong.
      */
-    .get([getAllUser], (req, res) => {
-        res.status(200).json({ user: res.locals.user })
-    })
-
-
-router.route('/:username')
-    /**
-     * @api {get} /user/:username Get single user
-     * @apiName userGetSingle
-     * @apiGroup User
-     * @apiDescription Returns a single user object without password
-     * @apiParam {String} username
-     * @apiSuccess {Object} user User profile
-     * @apiError (401) {String} AuthentificationError Not allowed to access ressource
-     */
-    .get([authenticate, checkSchema(username as any), findUser], (req, res) => {
-        res.status(200).json({ user: res.locals.user })
-    })
-    /**
-     * @api {delete} /user/:username Delete user
-     * @apiName userDeleteSingle
-     * @apiGroup User
-     * @apiDescription Deletes a single user
-     * @apiParam {String} username
-     * @apiSuccess {Object} user Username
-     * @apiError (401) {String} AuthentificationError Not allowed to access ressource
-     */
-    .delete([authenticate, requireAdmin, checkSchema(username as any), deleteUser], (req, res) => {
-        res.status(200).json({ user: res.locals.user })
-    })
-    /**
-     * @api {post} /user/:username Update user
-     * @apiName userUpdateSingle
-     * @apiGroup User
-     * @apiDescription Updates a single user. Changes every property that is set in the request body.
-     * @apiParam {String} username
-     * @apiSuccess {Object} user Updated user object
-     * @apiError (401) {String} AuthentificationError Not allowed to access ressource
-     */
-    .post([authenticate, checkSchema(username as any), updateUser], (req, res) => {
+    .get([authenticate, getAllUser], (req, res) => {
         res.status(200).json({ user: res.locals.user })
     })
 
@@ -74,7 +36,7 @@ router.route('/login')
      * @apiSuccess {String} token API token
      * @apiError (401) {String} LoginFailed
      */
-    .post([checkSchema(login as any), authenticateUser], (req, res) => {
+    .post([checkSchema(login as any), checkSchemaValidation, authenticateUser], (req, res) => {
         res.status(200).json({ user: res.locals.user, token: res.locals.token })
     })
 
@@ -93,7 +55,7 @@ router.route('/signup')
      * @apiError (500) {String} InternalError Something went wrong during signup. Most likely to be during validation.
      * @apiDeprecated Users should not be allowed to sign up by themselfes but rather be invited to use docSys
      */
-    .post([checkSchema(signup as any), addUser, authenticateUser], (req, res) => {
+    .post([checkSchema(signup as any), checkSchemaValidation, addUser, authenticateUser], (req, res) => {
         res.status(200).json({ user: res.locals.user, token: res.locals.token })
     })
 
@@ -107,7 +69,46 @@ router.route('/unlock/:username')
          * @apiSuccess {Object} user User profile
          * @apiError (401) {String} AuthentificationError Not allowed to access ressource
          */
-    .post([authenticate, requireAdmin, checkSchema(username as any), unlockUser], (req, res) => {
+    .post([authenticate, requireAdmin, checkSchema(username as any), checkSchemaValidation, unlockUser], (req, res) => {
+        res.status(200).json({ user: res.locals.user })
+    })
+
+
+router.route('/:username')
+    /**
+     * @api {get} /user/:username Get single user
+     * @apiName userGetSingle
+     * @apiGroup User
+     * @apiDescription Returns a single user object without password
+     * @apiParam {String} username
+     * @apiSuccess {Object} user User profile
+     * @apiError (401) {String} AuthentificationError Not allowed to access ressource
+     */
+    .get([authenticate, checkSchema(username as any), checkSchemaValidation, findUser], (req, res) => {
+        res.status(200).json({ user: res.locals.user })
+    })
+    /**
+     * @api {delete} /user/:username Delete user
+     * @apiName userDeleteSingle
+     * @apiGroup User
+     * @apiDescription Deletes a single user
+     * @apiParam {String} username
+     * @apiSuccess {Object} user Username
+     * @apiError (401) {String} AuthentificationError Not allowed to access ressource
+     */
+    .delete([authenticate, requireAdmin, checkSchema(username as any), checkSchemaValidation, deleteUser], (req, res) => {
+        res.status(200).json({ user: res.locals.user })
+    })
+    /**
+     * @api {post} /user/:username Update user
+     * @apiName userUpdateSingle
+     * @apiGroup User
+     * @apiDescription Updates a single user. Changes every property that is set in the request body.
+     * @apiParam {String} username
+     * @apiSuccess {Object} user Updated user object
+     * @apiError (401) {String} AuthentificationError Not allowed to access ressource
+     */
+    .post([authenticate, checkSchema(username as any), checkSchemaValidation, updateUser], (req, res) => {
         res.status(200).json({ user: res.locals.user })
     })
 

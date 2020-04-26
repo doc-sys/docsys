@@ -156,7 +156,7 @@ user.statics.getAuthenticated = async function (username, password) {
 
 				return thisUser.update(updates, function (err) {
 					if (err) return reject(err)
-					return resolve(new Error(thisUser))
+					return resolve(thisUser)
 				})
 			}
 
