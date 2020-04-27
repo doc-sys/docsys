@@ -2,6 +2,8 @@
 
 A document management system written in Node and React, ready for the cloud. It is meant to incorporate the best from existing DMS and add an easy to expand API and the comforts of a modern day React app. For a full feature list see the [features](#features) section below.
 
+![Run ESLint](https://github.com/doc-sys/docsys/workflows/Run%20ESLint/badge.svg?branch=master) ![Publish Docker](https://github.com/doc-sys/docsys/workflows/Publish%20Docker/badge.svg) ![Test](https://github.com/doc-sys/docsys/workflows/Node.js%20Unit%20Test/badge.svg?branch=master)
+
 <p style="color:red;">STILL A WORK IN PROGRESS!</p>
 
 Be advised that the actual client and the CLI tool for easy deployment locally and to the cloud are located in seperate repositories.
