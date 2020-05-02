@@ -1,0 +1,12 @@
+{
+	"username": {
+		"isString": true,
+		"toString": true,
+		"errorMessage": "Please provide a username with your request"
+	},
+	"password": {
+		"isString": true,
+		"toString": true,
+		"errorMessage": "Please provide a password with your request"
+	}
+}

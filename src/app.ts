@@ -1,3 +1,6 @@
+import { Request, Response, NextFunction } from 'express'
+import { handleError, ErrorHandler } from './lib/helpers/error';
+
 var express = require('express')
 var path = require('path')
 var logger = require('morgan')
@@ -13,17 +16,12 @@ var cors = require('cors')
 
 require('dotenv-defaults').config()
 
-const { handleError } = require('./helpers/error')
+var indexRouter = require('./routes/index.route')
+var usersRouter = require('./routes/user.route')
+var docRouter = require('./routes/document.route')
 
-var indexRouter = require('./routes/index')
-var usersRouter = require('./routes/users')
-var docRouter = require('./routes/documents')
-var settingsRouter = require('./routes/settings')
-var helperRouter = require('./routes/helper')
 
 var app = express()
-
-console.log('PROCESS' + process.env.DB_PATH_TEST)
 
 try {
 	mongoose.connect(
@@ -67,37 +65,18 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// auth middleware
-const authRequired = async (req, res, next) => {
-	try {
-		let token
-
-		if (req.query.token) {
-			token = req.query.token
-		} else {
-			let authHeader = req.headers.authorization
-			token = authHeader.split(' ')[1]
-		}
-
-		let result = await jwt.verify(token, process.env.JWT_SECRET)
-		req.user = result
-
-		next()
-	} catch (error) {
-		res.status(500).json({ payload: { message: 'Unauthorized access' } })
-	}
-}
-
 app.use('/user', usersRouter)
-app.use('/document', authRequired, docRouter)
-app.use('/setting', authRequired, settingsRouter)
-app.use('/function', authRequired, helperRouter)
+app.use('/document', docRouter)
 app.use('/', indexRouter)
 
 // error handler
 // eslint-disable-next-line no-unused-vars
-app.use(function (err, req, res, next) {
+app.use(function (err: ErrorHandler, req: Request, res: Response, next: NextFunction) {
 	handleError(err, res)
+})
+
+app.use((req, res) => {
+	res.status(404).json({ error: 'Route not found' })
 })
 
 module.exports = app

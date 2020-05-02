@@ -1,10 +1,10 @@
 /* eslint-disable no-useless-escape */
 let mongoose = require('mongoose')
-let bcrypt = require('bcrypt')
+let bcrypt = require('bcryptjs')
 let sharp = require('sharp')
 
 const SALT_FACTOR = 10
-const MAX_LOGIN_ATTEMPTS = 10
+const MAX_LOGIN_ATTEMPTS = 5
 const LOCK_TIME = 2 * 60 * 60 * 1000
 
 let user = new mongoose.Schema({
@@ -52,13 +52,8 @@ let user = new mongoose.Schema({
 	},
 	lockUntil: {
 		type: Number,
+		default: null,
 	},
-})
-
-var reasons = (user.statics.failedLogin = {
-	NOT_FOUND: 0,
-	PASSWORD_INCORRECT: 1,
-	MAX_ATTEMPTS: 2,
 })
 
 user.virtual('isLocked').get(function () {
@@ -106,44 +101,53 @@ user.methods.comparePassword = function (pwd) {
 }
 
 user.methods.incLoginAttempts = function () {
-	return new Promise(function (resolve) {
-		if (this.lockUntil && this.lockUntil < Date.now()) {
-			return resolve(
-				this.update({
-					$set: { loginAttempts: 1 },
-					$unset: { lockUntil: 1 },
-				})
-			)
-		}
+	return new Promise((resolve, reject) => {
+		try {
+			if (this.lockUntil && this.lockUntil < Date.now()) {
+				return resolve(
+					this.update({
+						$set: { loginAttempts: 1 },
+						$unset: { lockUntil: 1 },
+					})
+				)
+			}
 
-		var updates = { $inc: { loginAttempts: 1 } }
-		if (this.loginAttempts + 1 >= MAX_LOGIN_ATTEMPTS && !this.isLocked) {
-			updates.$set = { lockUntil: Date.now() + LOCK_TIME }
-		}
+			var updates = { $inc: { loginAttempts: 1 } }
+			if (this.loginAttempts + 1 >= MAX_LOGIN_ATTEMPTS && !this.isLocked) {
+				updates.$set = { lockUntil: Date.now() + LOCK_TIME }
+			}
 
-		return resolve(this.update(updates))
+			return resolve(this.update(updates))
+		} catch (error) {
+			reject(new Error(error.message))
+		}
 	})
 }
 
 user.statics.getAuthenticated = async function (username, password) {
 	return new Promise((resolve, reject) => {
 		this.findOne({ username: username }, async function (err, thisUser) {
-			if (err) return handleError(reject, err)
+			if (err) return reject(new Error(err))
 
-			if (!thisUser) return handleError(reject, reasons.NOT_FOUND)
+			if (!thisUser) {
+				return reject(new Error('User could not be found'))
+			}
 
 			if (thisUser.isLocked) {
 				await thisUser.incLoginAttempts
-				return handleError(reject, reasons.MAX_ATTEMPTS)
+				return reject(new Error('User is locked'))
 			}
 
 			if (!password) {
-				return handleError(reject, 'Invalid password')
+				return reject(new Error('Password missing'))
 			}
 
 			let compareResult = await thisUser.comparePassword(password)
 			if (compareResult) {
-				if (!thisUser.loginAttempts && !user.lockUntil) return resolve(thisUser)
+				if (thisUser.isLocked && thisUser.lockUntil > Date.now()) {
+					await thisUser.update({ $set: { loginAttempts: 0 } })
+					return reject(new Error('User is locked'))
+				}
 
 				var updates = {
 					$set: { loginAttempts: 0 },
@@ -156,18 +160,10 @@ user.statics.getAuthenticated = async function (username, password) {
 				})
 			}
 
-			await thisUser.incLoginAttempts
-			return handleError(reject, reasons.PASSWORD_INCORRECT)
+			await thisUser.incLoginAttempts()
+			return reject(new Error('Password incorrect'))
 		})
 	})
-}
-
-function handleError(reject, error) {
-	if (error == 0) {
-		reject('User not found')
-	} else {
-		reject(error)
-	}
 }
 
 function validateMail(mail) {
@@ -175,4 +171,4 @@ function validateMail(mail) {
 	return re.test(mail)
 }
 
-module.exports = mongoose.model('User', user)
+module.exports = { user: mongoose.model('User', user) }

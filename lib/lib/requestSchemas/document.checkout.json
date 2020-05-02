@@ -1,0 +1,6 @@
+{
+	"fileid": {
+		"in": ["params"],
+		"errorMessage": "Please provide a fileId with your request URL"
+	}
+}

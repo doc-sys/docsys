@@ -73,4 +73,4 @@ let document = new mongoose.Schema({
 	],
 })
 
-module.exports = mongoose.model('Doc', document)
+module.exports = { doc: mongoose.model('Doc', document) }
