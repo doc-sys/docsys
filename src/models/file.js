@@ -7,7 +7,7 @@ let file = new mongoose.Schema({
 	},
 	created: {
 		type: Date,
-		default: Date.now(),
+		default: () => Date.now(),
 	},
 	dated: {
 		type: Date,
@@ -55,13 +55,14 @@ let file = new mongoose.Schema({
 		{
 			timestamp: {
 				type: Date,
-				default: Date.now(),
+				default: () => Date.now(),
 			},
 			user: {
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'User',
 				required: true,
 			},
+			logType: { type: String, required: false },
 			message: {
 				type: String,
 				required: true,
