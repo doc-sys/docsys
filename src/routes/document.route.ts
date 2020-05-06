@@ -86,7 +86,7 @@ router.route('/checkout/:fileid')
      * @apiError (401) PermissionError Not allowed to GET this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .get([authenticate, checkSchema(checkout), checkSchemaValidation, getSingleFile, checkPermissionToFile, /* lockFile */, downloadFile], async (req, res) => {
+    .get([authenticate, checkSchema(checkout), checkSchemaValidation, getSingleFile, checkPermissionToFile, /* lockFile ,*/ downloadFile], (req, res) => {
         res.writeHead(200, {
             'Content-Type': res.locals.file.mimetype,
             'Content-disposition': `attachment; filename=${res.locals.file.title}.${res.locals.file.extension}`,
