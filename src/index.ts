@@ -6,6 +6,8 @@ var app = require('./app')
 var debug = require('debug')('docsys:server')
 var http = require('http')
 
+import io from './socket';
+
 /**
  * Get port from environment and store in Express.
  */
@@ -18,6 +20,12 @@ app.set('port', port)
  */
 
 var server = http.createServer(app)
+
+// /**
+//  * Create WebSocket server
+//  */
+
+io.attach(server)
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -33,6 +41,7 @@ server.on('listening', onListening)
 
 function normalizePort(val: any) {
 	var port = parseInt(val, 10)
+
 
 	if (isNaN(port)) {
 		// named pipe

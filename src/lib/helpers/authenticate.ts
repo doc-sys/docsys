@@ -25,5 +25,5 @@ export default async function authenticate(req: any, res: Response, next: NextFu
 }
 
 export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
-    res.locals.user.isAdmin ? next() : next(new ErrorHandler(401, 'You have to be an administrator to do this.'))
+    res.locals.auth_user.isAdmin ? next() : next(new ErrorHandler(401, 'You have to be an administrator to do this.'))
 }

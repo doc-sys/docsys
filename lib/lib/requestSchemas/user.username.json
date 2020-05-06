@@ -1,6 +1,6 @@
 {
 	"username": {
-		"in": ["body", "query"],
+		"in": ["body", "query", "params"],
 		"isString": true,
 		"errorMessage": "Please provide a username with your request"
 	}

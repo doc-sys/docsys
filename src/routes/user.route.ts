@@ -1,5 +1,6 @@
 let express = require('express')
 import { checkSchema } from 'express-validator'
+const multer = require('multer')
 
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
 import { authenticateUser, addUser, findUser, getAllUser, deleteUser, unlockUser, updateUser } from '../controller/user.controller';
@@ -10,6 +11,9 @@ import username from '../lib/requestSchemas/user.username.json'
 import { checkSchemaValidation } from '../lib/helpers/validator';
 
 let router = express.Router()
+let uploadFileHandler = multer({
+    storage: multer.memoryStorage()
+})
 
 router.route('/')
     /**
@@ -108,7 +112,7 @@ router.route('/:username')
      * @apiSuccess {Object} user Updated user object
      * @apiError (401) {String} AuthentificationError Not allowed to access ressource
      */
-    .post([authenticate, checkSchema(username as any), checkSchemaValidation, updateUser], (req, res) => {
+    .post([authenticate, uploadFileHandler.single('avatar'), checkSchema(username as any), checkSchemaValidation, updateUser], (req, res) => {
         res.status(200).json({ user: res.locals.user })
     })
 

@@ -8,15 +8,16 @@ import getStorage from '../lib/storage/adapters'
 
 const storage = getStorage()
 
-import { doc } from '../models/document'
+import { File } from '../models/file'
+import { v4 as uuid } from 'uuid';
 
 //Model Find Operations
-export const getOwnDocuments = async (req: Request, res: Response, next: NextFunction) => {
+export const getOwnFiles = async (req: Request, res: Response, next: NextFunction) => {
     if (!res.locals.auth_user) return next(new ErrorHandler(500, "Can't access user property"))
 
     try {
-        let docs = await doc.find({ owner: res.locals.auth_user._id }).sort(req.body.sorted || req.query.sorted || '-dated').select('title dated fileId locked')
-        res.locals.docs = docs
+        let files = await File.find({ owner: res.locals.auth_user._id }).sort(req.body.sorted || req.query.sorted || '-dated').populate('owner').select('title dated fileId locked extension owner.settings.displayName owner.avatar')
+        res.locals.files = files
     } catch (error) {
         return next(new ErrorHandler(500, (error as Error).message))
     }
@@ -24,12 +25,12 @@ export const getOwnDocuments = async (req: Request, res: Response, next: NextFun
     next()
 }
 
-export const getSharedDocuments = async (req: Request, res: Response, next: NextFunction) => {
+export const getSharedFiles = async (req: Request, res: Response, next: NextFunction) => {
     if (!res.locals.auth_user) return next(new ErrorHandler(500, "Can't access user property"))
 
     try {
-        let docs = await doc.find({ sharedWith: res.locals.auth_user._id }).sort(req.body.sorted || req.query.sorted || '-dated').populate('owner').select('title dated fileId locked owner.username owner.avatar')
-        res.locals.docs = docs
+        let files = await File.find({ sharedWith: res.locals.auth_user._id }).sort(req.body.sorted || req.query.sorted || '-dated').populate('owner').select('title dated fileId locked extension owner.username owner.avatar')
+        res.locals.files = files
     } catch (error) {
         return next(new ErrorHandler(500, (error as Error).message))
     }
@@ -37,10 +38,10 @@ export const getSharedDocuments = async (req: Request, res: Response, next: Next
     next()
 }
 
-export const getAllDocuments = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllFiles = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let allDocs = await doc.find({}).populate('owner')
-        res.locals.docs = allDocs
+        let allFiles = await File.find({}).populate('owner')
+        res.locals.files = allFiles
     } catch (error) {
         return next(new ErrorHandler(500, `Error getting documents: ${(error as Error).message}`))
     }
@@ -48,14 +49,13 @@ export const getAllDocuments = async (req: Request, res: Response, next: NextFun
     next()
 }
 
-export const getSingleDocument = async (req: Request, res: Response, next: NextFunction) => {
+export const getSingleFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let document = await doc.findOne({ fileId: req.params.fileid })
+        res.locals.file = await File.findOne({ fileId: req.params.fileid })
             .populate('owner')
             .populate('lockedBy')
             .populate('sharedWith')
             .populate('log.user')
-        res.locals.doc = document
     } catch (error) {
         return next(new ErrorHandler(500, `Error getting file: ${(error as Error).message}`))
     }
@@ -63,55 +63,73 @@ export const getSingleDocument = async (req: Request, res: Response, next: NextF
     next()
 }
 
+export const deleteSingleFile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        let fileId = req.params.fileid || req.body.fileid || req.query.fileid
+        res.locals.file = await File.findOneAndDelete({ fileId: fileId })
+        await storage.delete(res.locals.file.fileStorageId)
+    } catch (error) {
+        return next(new ErrorHandler(500, `Error deleting file: ${(error as Error).message}`))
+    }
+
+    next()
+}
+
 //Create And Update Model
 
-export const createNewDocument = async (req: Request, res: Response, next: NextFunction) => {
+export const createNewFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let newDoc = new doc(req.body)
-        res.locals.doc = await newDoc.save()
+        let fileid = uuid()
+        let file = new File(req.body)
+        file.owner = res.locals.auth_user._id
+        file.fileId = fileid
+        res.locals.file = await file.save()
     } catch (error) {
         return next(new ErrorHandler(500, `Error creating document: ${(error as Error).message}`))
     }
+
+    next()
 }
 
 export const uploadFiles = async (req: Request, res: Response, next: NextFunction) => {
-    if (!(['pdf', 'jpg', 'jpeg', 'png', 'tiff'].includes(filetypeFromBuffer(req.files[0].buffer) as any))) return next(new ErrorHandler(415, `Filetype ${filetypeFromBuffer(req.files[0].buffer)} not supported`))
-
     try {
-        req.files.forEach(async (file: any, i: number) => {
-            let bStream = new PassThrough()
-            bStream.end(file.buffer)
+        let filetype = await filetypeFromBuffer(req.file.buffer)
 
-            let pageId = await storage.add(bStream)
+        let bStream = new PassThrough()
+        bStream.end(req.file.buffer)
 
-            res.locals.doc.pageHashes = []
-            res.locals.doc.pageHashes.push(pageId)
-        })
+        let storageId = await storage.add(bStream)
 
-        await res.locals.doc.save()
-        next()
+        res.locals.file.fileStorageId = storageId
+        res.locals.file.mime = filetype?.mime
+        res.locals.file.extension = filetype?.ext
+        res.locals.file.save()
+        delete res.locals.file.fileStorageId
     } catch (error) {
+        console.error(error)
         return next(new ErrorHandler(500, `Error handling file upload: ${(error as Error).message}`))
     }
+
+    next()
 }
 
 // Lock Operations
 
 export const checkPermissionToFile = async (req: Request, res: Response, next: NextFunction) => {
-    if (!(res.locals.auth_user == res.locals.doc.owner.username || res.locals.doc.sharedWith.includes(res.locals.auth_user)) || res.locals.doc.locked) return next(new ErrorHandler(401, "File can't be checked out by you"))
+    if (!(res.locals.auth_user.username == res.locals.file.owner.username || res.locals.file.sharedWith.includes(res.locals.auth_user)) || res.locals.file.locked) return next(new ErrorHandler(401, "File can't be checked out by you"))
     next()
 }
 
 export const checkFileOwnership = async (req: Request, res: Response, next: NextFunction) => {
-    if (!(res.locals.auth_user._id == res.locals.dox.owner._id)) return next(new ErrorHandler(401, 'You are not permitted to acces this file'))
+    if (!(res.locals.auth_user._id == res.locals.file.owner._id)) return next(new ErrorHandler(401, 'You are not permitted to acces this file'))
     next()
 }
 
 export const lockFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        res.locals.doc.lockedBy = res.locals.auth_user
-        res.locals.doc.locked = true
-        await res.locals.doc.save()
+        res.locals.file.lockedBy = res.locals.auth_user
+        res.locals.file.locked = true
+        await res.locals.file.save()
     } catch (error) {
         return next(new ErrorHandler(500, `Error locking file: ${(error as Error).message}`))
     }
@@ -121,9 +139,9 @@ export const lockFile = async (req: Request, res: Response, next: NextFunction) 
 
 export const unlockFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        res.locals.doc.lockedBy = null
-        res.locals.doc.locked = false
-        await res.locals.doc.save()
+        res.locals.file.lockedBy = null
+        res.locals.file.locked = false
+        await res.locals.file.save()
     } catch (error) {
         return next(new ErrorHandler(500, `Error unlocking file: ${(error as Error).message}`))
     }
@@ -135,15 +153,17 @@ export const unlockFile = async (req: Request, res: Response, next: NextFunction
 
 export const downloadFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let zip = await archive('zip')
-        await Promise.all(
-            res.locals.doc.pageHashes.forEach(async element => {
-                let buffer = await storage.get(element)
-                zip.append()
-            })
-        )
+        // let zip = await archive('zip')
+        // await Promise.all(
+        //     res.locals.file.pageHashes.forEach(async element => {
+        //         let buffer = await storage.get(element)
+        //         zip.append()
+        //     })
+        // )
 
-        res.locals.zip = zip
+        // res.locals.zip = zip
+
+        res.locals.fileBuffer = await storage.get(res.locals.file.fileStorageId)
     } catch (error) {
         return next(new ErrorHandler(500, `Error downloading file; ${(error as Error).message}`))
     }
@@ -156,9 +176,9 @@ export const downloadFile = async (req: Request, res: Response, next: NextFuncti
 export const shareFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
         let userToShare = req.body.userToShare || req.query.userToShare
-        res.locals.doc.sharedWith.push(userToShare._id)
+        res.locals.file.sharedWith.push(userToShare._id)
 
-        await res.locals.doc.save()
+        await res.locals.file.save()
     } catch (error) {
         return next(new ErrorHandler(500, `Error sharing file: ${(error as Error).message}`))
     }

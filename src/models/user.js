@@ -81,7 +81,11 @@ user.pre('save', function (next) {
 user.methods.saveAvatar = async function (avatar) {
 	let newAvatar = await sharp(avatar).resize(64, 64).toBuffer()
 
-	this.avatar = newAvatar
+	this.avatar = await Buffer.from(newAvatar).toString('base64')
+
+	console.log(this)
+	//await this.save()
+	//console.log('saved')
 }
 
 user.methods.comparePassword = function (pwd) {
@@ -170,5 +174,18 @@ function validateMail(mail) {
 	var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 	return re.test(mail)
 }
+
+var handleE11000 = function (error, res, next) {
+	if (error.name === 'MongoError' && error.code === 11000) {
+		next(new Error('User already exists'))
+	} else {
+		next()
+	}
+}
+
+user.post('save', handleE11000)
+user.post('update', handleE11000)
+user.post('findOneAndUpdate', handleE11000)
+user.post('insertMany', handleE11000)
 
 module.exports = { user: mongoose.model('User', user) }

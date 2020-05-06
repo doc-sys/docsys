@@ -1,0 +1,6 @@
+{
+	"convoid": {
+		"in": ["params", "body"],
+		"errorMessage": "Please provide a conversation Id"
+	}
+}

@@ -1,0 +1,7 @@
+{
+	"fileid": {
+		"in": ["body", "query", "params"],
+		"isString": true,
+		"errorMessage": "Please provide a fileID with your request"
+	}
+}

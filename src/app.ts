@@ -19,6 +19,7 @@ require('dotenv-defaults').config()
 var indexRouter = require('./routes/index.route')
 var usersRouter = require('./routes/user.route')
 var docRouter = require('./routes/document.route')
+var messageRouter = require('./routes/message.route')
 
 
 var app = express()
@@ -31,6 +32,7 @@ try {
 		{
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
+			useFindAndModify: true
 		}
 	)
 } catch (error) {
@@ -61,12 +63,22 @@ if (process.env.NODE_ENV !== 'test') {
 	)
 }
 
-app.use(cors())
+app.use(cors({ origin: '*' }))
+// app.options('*', (req: Request, res: Response) => {
+// 	res.header('Access-Control-Allow-Origin', '*')
+// 	res.header('Access-Control-Allow-Methods', '*')
+// 	res.header('Access-Control-Allow-Headers', '*')
+// 	//res.header('Access-Control-Allow-Credentials', '*')
+// 	console.log('PREFLIGHT')
+
+// 	res.end()
+// })
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/user', usersRouter)
 app.use('/document', docRouter)
+app.use('/message', messageRouter)
 app.use('/', indexRouter)
 
 // error handler

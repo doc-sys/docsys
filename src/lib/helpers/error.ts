@@ -8,11 +8,13 @@ export class ErrorHandler extends Error {
         super()
         this.statusCode = statusCode
         this.message = message
+
+        console.error(this.stack)
     }
 }
 
 export const handleError = (err: ErrorHandler, res: Response) => {
-    res.status(400).json({
-        payload: { message: err.message }
+    res.status(err.statusCode || 500).json({
+        message: err.message
     })
 }

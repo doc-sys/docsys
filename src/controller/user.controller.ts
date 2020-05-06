@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ErrorHandler } from '../lib/helpers/error';
 import { user } from '../models/user'
 import * as jwt from 'jsonwebtoken'
+let sharp = require('sharp')
 
 import { validationResult } from 'express-validator'
 
@@ -19,8 +20,13 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
         return next(new ErrorHandler(501, `Error authenticating user: ${(error as Error).message}`))
     }
 
+    let cleanResult = result.toJSON()
+    await delete cleanResult.avatar
+    await delete cleanResult.password
+    await delete result.password
+
     try {
-        var token = await jwt.sign(result.toJSON(), process.env.JWT_SECRET, {
+        var token = await jwt.sign(cleanResult, process.env.JWT_SECRET, {
             expiresIn: process.env.JWT_EXPIRES,
         })
     } catch (error) {
@@ -58,11 +64,18 @@ export const addUser = async (req: Request, res: Response, next: NextFunction) =
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         delete req.body.lockUntil, req.body.loginAttempts, req.body.admin
+        if (req.file) {
+            let newAvatar = await sharp(req.file.buffer).resize(64, 64).toBuffer()
+            req.body.avatar = await Buffer.from(newAvatar).toString('base64')
+        }
+
         let updatedUser = await user.findOneAndUpdate({ username: req.body.username || req.params.username }, req.body, { new: true })
         res.locals.user = updatedUser
     } catch (error) {
         return next(new ErrorHandler(500, `Error updating user: ${(error as Error).message}`))
     }
+
+    next()
 }
 
 // FindOperations
@@ -107,4 +120,6 @@ export const unlockUser = async (req: Request, res: Response, next: NextFunction
     } catch (error) {
         return next(new ErrorHandler(500, `Error unlocking user: ${(error as Error).message}`))
     }
+
+    next()
 }

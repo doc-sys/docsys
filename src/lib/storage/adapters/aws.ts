@@ -37,14 +37,16 @@ export default class AWS implements StorageAdapter {
         })
     }
 
-    async get(id: string, stream: WriteStream): Promise<void> {
+    async get(id: string): Promise<Buffer> {
         const params: aws.S3.GetObjectRequest = { Bucket: this.bucket_name, Key: id }
 
         return new Promise((resolve, reject) => {
             let download = this.connection.getObject(params).createReadStream()
             download.on('error', (error) => reject(error))
 
-            download.pipe(stream).on('error', (error) => reject(error)).on('finish', () => resolve())
+            let chunks: any = []
+            download.on('data', chunk => chunks.push(chunk))
+            download.on('end', chunk => resolve(Buffer.concat(chunks)))
         })
     }
 
