@@ -1,6 +1,6 @@
 let mongoose = require('mongoose')
 
-let document = new mongoose.Schema({
+let file = new mongoose.Schema({
 	title: {
 		type: String,
 		required: true,
@@ -26,7 +26,7 @@ let document = new mongoose.Schema({
 	owner: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'User',
-		required: false,
+		required: true,
 	},
 	sharedWith: [
 		{
@@ -50,10 +50,7 @@ let document = new mongoose.Schema({
 	extension: {
 		type: String,
 	},
-	pageHashes: {
-		type: [String],
-		required: true,
-	},
+	fileStorageId: String,
 	log: [
 		{
 			timestamp: {
@@ -73,4 +70,17 @@ let document = new mongoose.Schema({
 	],
 })
 
-module.exports = mongoose.model('Doc', document)
+var handleE11000 = function (error, res, next) {
+	if (error.name === 'MongoError' && error.code === 11000) {
+		next(new Error('File already exists'))
+	} else {
+		next()
+	}
+}
+
+file.post('save', handleE11000)
+file.post('update', handleE11000)
+file.post('findOneAndUpdate', handleE11000)
+file.post('insertMany', handleE11000)
+
+module.exports = { File: mongoose.model('File', file) }

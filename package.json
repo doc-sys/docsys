@@ -8,7 +8,7 @@
 		"type-check:watch": "npm run type-check -- --watch",
 		"build": "npm run build:js",
 		"build:types": "tsc --emitDeclarationOnly",
-		"build:js": "babel src --out-dir lib --extensions \".ts,.tsx,.js\" --source-maps inline",
+		"build:js": "babel src --out-dir lib --extensions \".ts,.tsx,.js\" --source-maps inline --copy-files",
 		"test": "nyc --reporter=text mocha -r ts-node/register ./tests --timeout 10000 --exit",
 		"run": "nodemon",
 		"eslint:github-action": "eslint src/"
@@ -16,9 +16,11 @@
 	"dependencies": {
 		"@azure/storage-blob": "^12.1.1",
 		"@google-cloud/storage": "^4.7.0",
+		"@types/socket.io": "^2.1.4",
+		"@types/ws": "^7.2.4",
 		"archiver": "^3.1.1",
 		"aws-sdk": "^2.610.0",
-		"bcrypt": "^3.0.7",
+		"bcryptjs": "^2.4.3",
 		"body-parser": "^1.19.0",
 		"compression": "^1.7.4",
 		"cors": "^2.8.5",
@@ -26,6 +28,7 @@
 		"dotenv": "^8.2.0",
 		"dotenv-defaults": "^1.1.1",
 		"express": "~4.16.1",
+		"express-validator": "^6.4.0",
 		"file-type": "^13.1.2",
 		"handlebars": "^4.7.6",
 		"helmet": "^3.21.3",
@@ -38,8 +41,11 @@
 		"multer": "^1.4.2",
 		"multer-s3": "^2.9.0",
 		"node-rake": "^1.0.1",
+		"redis-status": "^1.0.3",
 		"sharp": "^0.24.1",
-		"uuid": "^3.4.0"
+		"socket.io": "^2.3.0",
+		"uuid": "^3.4.0",
+		"ws": "^7.2.5"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.8.4",

@@ -1,13 +1,119 @@
 define({ "api": [
   {
+    "type": "unlock",
+    "url": "/document/checkout/:fileid",
+    "title": "",
+    "name": "documentAdminUnlock",
+    "group": "Document",
+    "description": "<p>Unlocks a locked document without actually submitting a new document file. Requires user to be an admin</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "fileid",
+            "description": "<p>The fileid as part of the POST URL</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "Object",
+            "optional": false,
+            "field": "The",
+            "description": "<p>unlocked document</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "optional": false,
+            "field": "PermissionError",
+            "description": "<p>Not allowed to UNLOCK this file</p>"
+          }
+        ],
+        "500": [
+          {
+            "group": "500",
+            "type": "String",
+            "optional": false,
+            "field": "InternalError",
+            "description": "<p>Something went wrong</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "src/routes/document.route.ts",
+    "groupTitle": "Document"
+  },
+  {
     "type": "post",
     "url": "/document/checkout/:fileid",
     "title": "",
+    "name": "documentCheckin",
+    "group": "Document",
+    "description": "<p>Accepts an upload for a locked file and unlocks said file</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "fileid",
+            "description": "<p>The fileid as part of the POST URL</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "Object",
+            "optional": false,
+            "field": "The",
+            "description": "<p>uploaded document</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "optional": false,
+            "field": "PermissionError",
+            "description": "<p>Not allowed to POST this file</p>"
+          }
+        ],
+        "500": [
+          {
+            "group": "500",
+            "type": "String",
+            "optional": false,
+            "field": "InternalError",
+            "description": "<p>Something went wrong</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
-    "filename": "src/routes/documents.js",
-    "group": "C:\\Users\\LocalAdmin\\Documents\\Code\\docsys\\src\\routes\\documents.js",
-    "groupTitle": "C:\\Users\\LocalAdmin\\Documents\\Code\\docsys\\src\\routes\\documents.js",
-    "name": "PostDocumentCheckoutFileid"
+    "filename": "src/routes/document.route.ts",
+    "groupTitle": "Document"
   },
   {
     "type": "get",
@@ -51,11 +157,20 @@ define({ "api": [
             "field": "PermissionError",
             "description": "<p>Not allowed to GET this file</p>"
           }
+        ],
+        "500": [
+          {
+            "group": "500",
+            "type": "String",
+            "optional": false,
+            "field": "InternalError",
+            "description": "<p>Something went wrong</p>"
+          }
         ]
       }
     },
     "version": "0.0.0",
-    "filename": "src/routes/documents.js",
+    "filename": "src/routes/document.route.ts",
     "groupTitle": "Document"
   },
   {
@@ -94,7 +209,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "comment",
-            "description": "<p>Optional comment to append to log</p>"
+            "description": "<p>Comment to append to log</p>"
           }
         ]
       }
@@ -104,16 +219,25 @@ define({ "api": [
         "Success 200": [
           {
             "group": "Success 200",
-            "type": "String",
+            "type": "Object",
             "optional": false,
-            "field": "message",
-            "description": "<p>Confirming upload</p>"
+            "field": "document",
+            "description": "<p>The created document</p>"
           }
         ]
       }
     },
     "error": {
       "fields": {
+        "415": [
+          {
+            "group": "415",
+            "type": "String",
+            "optional": false,
+            "field": "FileTypeError",
+            "description": "<p>Filetype is not supported. So far only PDFs and picture types are supported</p>"
+          }
+        ],
         "500": [
           {
             "group": "500",
@@ -126,7 +250,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "src/routes/documents.js",
+    "filename": "src/routes/document.route.ts",
     "groupTitle": "Document"
   },
   {
@@ -143,14 +267,36 @@ define({ "api": [
             "group": "Success 200",
             "type": "Array",
             "optional": false,
-            "field": "ownDocs",
+            "field": "docs",
             "description": "<p>User documents basic metadata</p>"
           }
         ]
       }
     },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "type": "String",
+            "optional": false,
+            "field": "PermissionError",
+            "description": "<p>Not allowed to GET this file</p>"
+          }
+        ],
+        "500": [
+          {
+            "group": "500",
+            "type": "String",
+            "optional": false,
+            "field": "InternalError",
+            "description": "<p>Something went wrong</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
-    "filename": "src/routes/documents.js",
+    "filename": "src/routes/document.route.ts",
     "groupTitle": "Document"
   },
   {
@@ -173,17 +319,243 @@ define({ "api": [
         ]
       }
     },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "type": "String",
+            "optional": false,
+            "field": "PermissionError",
+            "description": "<p>Not allowed to GET this file</p>"
+          }
+        ],
+        "500": [
+          {
+            "group": "500",
+            "type": "String",
+            "optional": false,
+            "field": "InternalError",
+            "description": "<p>Something went wrong</p>"
+          }
+        ]
+      }
+    },
     "version": "0.0.0",
-    "filename": "src/routes/documents.js",
+    "filename": "src/routes/document.route.ts",
     "groupTitle": "Document"
   },
   {
     "type": "get",
-    "url": "/user/autocomplete",
-    "title": "Username Autocomplete JSON",
+    "url": "/document/:fileid",
+    "title": "Get single document",
+    "name": "documentGetSingle",
+    "group": "Document",
+    "description": "<p>Returns the single requested document</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "fileid",
+            "description": "<p>The fileid as part of the GET URL</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "document",
+            "description": "<p>The requested object</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "type": "String",
+            "optional": false,
+            "field": "PermissionError",
+            "description": "<p>Not allowed to GET this file</p>"
+          }
+        ],
+        "500": [
+          {
+            "group": "500",
+            "type": "String",
+            "optional": false,
+            "field": "InternalError",
+            "description": "<p>Something went wrong</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "src/routes/document.route.ts",
+    "groupTitle": "Document"
+  },
+  {
+    "type": "post",
+    "url": "/document/share/:fileid",
+    "title": "",
+    "name": "documentShareFile",
+    "group": "Document",
+    "description": "<p>Shares file with a new user</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "fileid",
+            "description": "<p>The fileid as part of the POST URL</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "whoToShare",
+            "description": "<p>Username to share the file with. Provided in body or query.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "200": [
+          {
+            "group": "200",
+            "type": "Object",
+            "optional": false,
+            "field": "The",
+            "description": "<p>updated document</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "optional": false,
+            "field": "PermissionError",
+            "description": "<p>Not allowed to edit this file</p>"
+          }
+        ],
+        "500": [
+          {
+            "group": "500",
+            "type": "String",
+            "optional": false,
+            "field": "InternalError",
+            "description": "<p>Something went wrong</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "src/routes/document.route.ts",
+    "groupTitle": "Document"
+  },
+  {
+    "type": "get",
+    "url": "/document/",
+    "title": "All documents",
+    "name": "documentsGetAll",
+    "group": "Document",
+    "description": "<p>Gets all documents on the instance. Can only be accessed by an admin.</p>",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "document",
+            "description": "<p>All documents</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "optional": false,
+            "field": "NotAuthorized",
+            "description": "<p>Only admins are allow to access this ressource</p>"
+          }
+        ],
+        "500": [
+          {
+            "group": "500",
+            "optional": false,
+            "field": "InternalServerError",
+            "description": "<p>Something went wron processing your request</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "src/routes/document.route.ts",
+    "groupTitle": "Document"
+  },
+  {
+    "type": "get",
+    "url": "/",
+    "title": "Server health",
+    "name": "serverPingHealth",
+    "group": "Root",
+    "description": "<p>Returns information on the server health</p>",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "healt",
+            "description": "<p>Server health information</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "500": [
+          {
+            "group": "500",
+            "optional": false,
+            "field": "InternalServerError",
+            "description": "<p>Something went wron processing your request</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "src/routes/index.route.ts",
+    "groupTitle": "Root"
+  },
+  {
+    "type": "get",
+    "url": "/user/",
+    "title": "Get All Users",
     "name": "UserNameAutoComplete",
     "group": "User",
-    "description": "<p>Gives back the full user list (names and usernames) for use in autocomplete</p>",
+    "description": "<p>Gives back the full user list</p>",
     "success": {
       "fields": {
         "Success 200": [
@@ -191,7 +563,7 @@ define({ "api": [
             "group": "Success 200",
             "type": "Array",
             "optional": false,
-            "field": "userList",
+            "field": "user",
             "description": "<p>List of user profiles</p>"
           }
         ]
@@ -211,16 +583,16 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "src/routes/users.js",
+    "filename": "src/routes/user.route.ts",
     "groupTitle": "User"
   },
   {
-    "type": "post",
-    "url": "/user/signup/:inviteid",
-    "title": "User signup with invite",
-    "name": "userInvite",
+    "type": "delete",
+    "url": "/user/:username",
+    "title": "Delete user",
+    "name": "userDeleteSingle",
     "group": "User",
-    "description": "<p>New alternative for userSignup. Potential user should recieve a token per mail with that he can join the organistaion.</p>",
+    "description": "<p>Deletes a single user</p>",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -228,8 +600,58 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
-            "field": "inviteid",
-            "description": "<p>The invitatation ID as part of the POST URL</p>"
+            "field": "username",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "user",
+            "description": "<p>Username</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "type": "String",
+            "optional": false,
+            "field": "AuthentificationError",
+            "description": "<p>Not allowed to access ressource</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "src/routes/user.route.ts",
+    "groupTitle": "User"
+  },
+  {
+    "type": "get",
+    "url": "/user/:username",
+    "title": "Get single user",
+    "name": "userGetSingle",
+    "group": "User",
+    "description": "<p>Returns a single user object without password</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "username",
+            "description": ""
           }
         ]
       }
@@ -243,13 +665,6 @@ define({ "api": [
             "optional": false,
             "field": "user",
             "description": "<p>User profile</p>"
-          },
-          {
-            "group": "Success 200",
-            "type": "String",
-            "optional": false,
-            "field": "token",
-            "description": "<p>API token</p>"
           }
         ]
       }
@@ -261,23 +676,14 @@ define({ "api": [
             "group": "401",
             "type": "String",
             "optional": false,
-            "field": "InvalidInvite",
-            "description": "<p>User didn't provide a valid ID</p>"
-          }
-        ],
-        "500": [
-          {
-            "group": "500",
-            "type": "String",
-            "optional": false,
-            "field": "InternalError",
-            "description": "<p>Something went wrong during signup. Most likely to be during validation.</p>"
+            "field": "AuthentificationError",
+            "description": "<p>Not allowed to access ressource</p>"
           }
         ]
       }
     },
     "version": "0.0.0",
-    "filename": "src/routes/users.js",
+    "filename": "src/routes/user.route.ts",
     "groupTitle": "User"
   },
   {
@@ -341,7 +747,7 @@ define({ "api": [
       }
     },
     "version": "0.0.0",
-    "filename": "src/routes/users.js",
+    "filename": "src/routes/user.route.ts",
     "groupTitle": "User"
   },
   {
@@ -422,7 +828,107 @@ define({ "api": [
       "content": "Users should not be allowed to sign up by themselfes but rather be invited to use docSys"
     },
     "version": "0.0.0",
-    "filename": "src/routes/users.js",
+    "filename": "src/routes/user.route.ts",
+    "groupTitle": "User"
+  },
+  {
+    "type": "post",
+    "url": "/user/unlock/:username",
+    "title": "Unlock locked user",
+    "name": "userUnlock",
+    "group": "User",
+    "description": "<p>Unlocks user and sets login attempts to 0</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "username",
+            "description": "<p>Username</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "user",
+            "description": "<p>User profile</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "type": "String",
+            "optional": false,
+            "field": "AuthentificationError",
+            "description": "<p>Not allowed to access ressource</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "src/routes/user.route.ts",
+    "groupTitle": "User"
+  },
+  {
+    "type": "post",
+    "url": "/user/:username",
+    "title": "Update user",
+    "name": "userUpdateSingle",
+    "group": "User",
+    "description": "<p>Updates a single user. Changes every property that is set in the request body.</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "username",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "user",
+            "description": "<p>Updated user object</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "401": [
+          {
+            "group": "401",
+            "type": "String",
+            "optional": false,
+            "field": "AuthentificationError",
+            "description": "<p>Not allowed to access ressource</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "src/routes/user.route.ts",
     "groupTitle": "User"
   }
 ] });

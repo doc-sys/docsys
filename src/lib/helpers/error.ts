@@ -1,6 +1,6 @@
 import { Response } from 'express'
 
-class ErrorHandler extends Error {
+export class ErrorHandler extends Error {
     public statusCode: number
     public message: string
 
@@ -8,16 +8,13 @@ class ErrorHandler extends Error {
         super()
         this.statusCode = statusCode
         this.message = message
+
+        console.error(this.stack)
     }
 }
 
-const handleError = (err: ErrorHandler, res: Response) => {
-    res.status(400).json({
-        payload: { message: err.message }
+export const handleError = (err: ErrorHandler, res: Response) => {
+    res.status(err.statusCode || 500).json({
+        message: err.message
     })
-}
-
-module.exports = {
-    ErrorHandler,
-    handleError
 }

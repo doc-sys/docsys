@@ -1,0 +1,6 @@
+{
+	"participants": {
+		"in": ["body"],
+		"errorMessage": "Please provide a participants list"
+	}
+}
