@@ -83,6 +83,15 @@ export const createNewFile = async (req: Request, res: Response, next: NextFunct
         let file = new File(req.body)
         file.owner = res.locals.auth_user._id
         file.fileId = fileid
+        file.log.push({
+            user: res.locals.auth_user._id,
+            message: 'created this file'
+        })
+        file.log.push({
+            user: res.locals.auth_user._id,
+            logType: 'commented',
+            message: req.body.comment
+        })
         res.locals.file = await file.save()
     } catch (error) {
         return next(new ErrorHandler(500, `Error creating document: ${(error as Error).message}`))
@@ -108,6 +117,23 @@ export const uploadFiles = async (req: Request, res: Response, next: NextFunctio
     } catch (error) {
         console.error(error)
         return next(new ErrorHandler(500, `Error handling file upload: ${(error as Error).message}`))
+    }
+
+    next()
+}
+
+export const appendComment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.locals.file.log.push({
+            user: res.locals.auth_user,
+            message: req.body.comment,
+            logType: 'commented'
+        })
+        await res.locals.file.save()
+
+        //res.locals.file = await res.locals.file.populate('log.user')
+    } catch (error) {
+        return next(new ErrorHandler(500, `Error locking file: ${(error as Error).message}`))
     }
 
     next()

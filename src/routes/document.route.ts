@@ -4,7 +4,7 @@ const multer = require('multer')
 import { Readable } from "stream"
 
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
-import { getAllFiles, createNewFile, uploadFiles, getOwnFiles, getSharedFiles, checkPermissionToFile, lockFile, getSingleFile, downloadFile, unlockFile, shareFile, checkFileOwnership, deleteSingleFile } from '../controller/document.controller';
+import { getAllFiles, createNewFile, uploadFiles, getOwnFiles, getSharedFiles, checkPermissionToFile, lockFile, getSingleFile, downloadFile, unlockFile, shareFile, checkFileOwnership, deleteSingleFile, appendComment } from '../controller/document.controller';
 
 import createNew from '../lib/requestSchemas/document.createNew.json'
 import checkout from '../lib/requestSchemas/document.checkout.json'
@@ -75,6 +75,20 @@ router.route('/shared')
         res.status(200).json({ docs: res.locals.files })
     })
 
+router.route('/comment/:fileid')
+    /**
+     * @api {post} /document/comment/:fileid Add comment to file log
+     * @apiName documentAddComment
+     * @apiGroup Document
+     * @apiDescription Returns the file log
+     * @apiSuccess {Array} logs Log of the file
+     * @apiError (401) {String} PermissionError Not allowed to POST a comment
+     * @apiError (500) {String} InternalError Something went wrong
+     */
+    .post([authenticate, checkSchema(fileid), checkSchemaValidation, getSingleFile, checkPermissionToFile, appendComment], (req, res) => {
+        res.status(200).json(res.locals.file.log)
+    })
+
 router.route('/checkout/:fileid')
     /**
      * @api {get} /document/checkout/:fileid Document checkout
@@ -98,19 +112,6 @@ router.route('/checkout/:fileid')
         stream.push(null)
 
         stream.pipe(res)
-    })
-    /**
-     * @api {post} /document/checkout/:fileid
-     * @apiName documentCheckin
-     * @apiGroup Document
-     * @apiDescription Accepts an upload for a locked file and unlocks said file
-     * @apiParam {String} fileid The fileid as part of the POST URL
-     * @apiSuccess (200) {Object} The uploaded document
-     * @apiError (401) PermissionError Not allowed to POST this file
-     * @apiError (500) {String} InternalError Something went wrong
-     */
-    .post([authenticate, checkSchema(checkout as any), checkSchemaValidation, getSingleFile, checkPermissionToFile, uploadFileHandler.array('documents'), uploadFiles, unlockFile], (req, res) => {
-        res.status(200).json({ doc: res.locals.file })
     })
     /**
     * @api {unlock} /document/checkout/:fileid
