@@ -15,7 +15,7 @@ const conversation = new mongoose.Schema({
 	],
 	lastMessage: {
 		type: Date,
-		default: Date.now(),
+		default: () => Date.now(),
 	},
 	messages: [
 		{
@@ -25,7 +25,7 @@ const conversation = new mongoose.Schema({
 				required: true,
 			},
 			content: { type: String, required: true },
-			timestamp: { type: Date, default: Date.now() },
+			timestamp: { type: Date, default: () => Date.now() },
 		},
 	],
 })
