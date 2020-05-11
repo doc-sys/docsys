@@ -19,6 +19,8 @@ let file = new mongoose.Schema({
 		type: [String],
 		minlength: 3,
 	},
+	ocr: { type: Boolean, default: false },
+	key: { type: Boolean, default: false },
 	fileId: {
 		type: String,
 		unique: true,
@@ -49,6 +51,10 @@ let file = new mongoose.Schema({
 	},
 	extension: {
 		type: String,
+	},
+	archived: {
+		type: Boolean,
+		default: false,
 	},
 	fileStorageId: String,
 	log: [

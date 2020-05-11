@@ -84,6 +84,7 @@ app.use('/', indexRouter)
 // error handler
 // eslint-disable-next-line no-unused-vars
 app.use(function (err: ErrorHandler, req: Request, res: Response, next: NextFunction) {
+	console.error(err)
 	handleError(err, res)
 })
 

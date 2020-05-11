@@ -4,7 +4,7 @@ const multer = require('multer')
 import { Readable } from "stream"
 
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
-import { getAllFiles, createNewFile, uploadFiles, getOwnFiles, getSharedFiles, checkPermissionToFile, lockFile, getSingleFile, downloadFile, unlockFile, shareFile, checkFileOwnership, deleteSingleFile, appendComment } from '../controller/document.controller';
+import { getAllFiles, createNewFile, getRecent, uploadFiles, getOwnFiles, getSharedFiles, checkPermissionToFile, lockFile, getSingleFile, downloadFile, unlockFile, shareFile, checkFileOwnership, deleteSingleFile, appendComment, archiveFile } from '../controller/document.controller';
 
 import createNew from '../lib/requestSchemas/document.createNew.json'
 import checkout from '../lib/requestSchemas/document.checkout.json'
@@ -75,6 +75,20 @@ router.route('/shared')
         res.status(200).json({ docs: res.locals.files })
     })
 
+router.route('/recent')
+    /**
+     * @api {get} /document/recent Get recent activity
+     * @apiName documentGetRecent
+     * @apiGroup Document
+     * @apiDescription Gets the recent activity on the users documents. Query 'limit' limits the amount of returned activity.
+     * @apiSuccess {Array} recent Recent actvity
+     * @apiError (401) {String} PermissionError Not allowed to GET this
+     * @apiError (500) {String} InternalError Something went wrong
+     */
+    .get([authenticate, getRecent], (req, res) => {
+        res.status(200).json(res.locals.recent)
+    })
+
 router.route('/comment/:fileid')
     /**
      * @api {post} /document/comment/:fileid Add comment to file log
@@ -102,16 +116,19 @@ router.route('/checkout/:fileid')
      */
     .get([authenticate, checkSchema(checkout), checkSchemaValidation, getSingleFile, checkPermissionToFile, /* lockFile ,*/ downloadFile], (req, res) => {
         res.writeHead(200, {
-            'Content-Type': res.locals.file.mimetype,
-            'Content-disposition': `attachment; filename=${res.locals.file.title}.${res.locals.file.extension}`,
+            'Content-Type': res.locals.file.mime,
+            'Content-disposition': `attachment; filename=${res.locals.file.title}`, //.${res.locals.file.extension}
+            'Content-Length': res.locals.fileBuffer.length
         })
 
-        const stream = new Readable()
-        stream._read = () => { }
-        stream.push(res.locals.fileBuffer)
-        stream.push(null)
+        res.end(res.locals.fileBuffer)
 
-        stream.pipe(res)
+        // const stream = new Readable()
+        // stream._read = () => { }
+        // stream.push(res.locals.fileBuffer)
+        // stream.push(null)
+
+        // stream.pipe(res)
     })
     /**
     * @api {unlock} /document/checkout/:fileid
@@ -139,9 +156,27 @@ router.route('/share/:fileid')
      * @apiError (401) PermissionError Not allowed to edit this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .post([authenticate, checkSchema(share), checkSchemaValidation, getSingleFile, shareFile], (req, res) => {
+    .post([authenticate, checkSchema(share), checkSchemaValidation, getSingleFile, checkPermissionToFile, shareFile], (req, res) => {
         res.status(200).json({ doc: res.locals.file })
     })
+
+router.route('/archive/:fileid')
+    /**
+     * @api {post} /document/archive/:fileid
+     * @apiName documentArchiveFile
+     * @apiGroup Document
+     * @apiDescription Moves the file to the archive
+     * @apiParam {String} fileid The fileid as part of the POST URL
+     * @apiSuccess (200) {Object} The archived document
+     * @apiError (401) PermissionError Not allowed to archive this file
+     * @apiError (500) {String} InternalError Something went wrong
+     */
+    .post([authenticate, checkSchema(fileid), checkSchemaValidation, getSingleFile, checkPermissionToFile, archiveFile], (req, res) => {
+        res.status(200).json({ file: res.locals.file })
+    })
+
+// router.route('/queue/:queue/:fileid')
+//     .post([authenticate, checkSchema(fileid), checkSchemaValidation, getSingleFile, checkPermissionToFile, downloadFile, handleQueue])
 
 router.route('/:fileid')
     /**
