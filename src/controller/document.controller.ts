@@ -229,6 +229,8 @@ export const shareFile = async (req: Request, res: Response, next: NextFunction)
             .populate('owner')
             .populate('sharedWith')
 
+        console.log(res.locals.file)
+
         await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], `${res.locals.auth_user.settings.displayName} shared ${res.locals.file.title} with you`, (res.locals.auth_user.username as String))
 
     } catch (error) {
@@ -263,7 +265,9 @@ export const handleQueue = async (req: Request, res: Response, next: NextFunctio
 async function emitNotification(recps: [String], actionContent: String, emitter: String) {
     for (let recp of recps) {
         if (recp !== emitter) {
+            console.log(recp)
             let recp_adress: String = await socketStore.get(recp)
+            console.log(recp_adress)
             if (recp_adress) {
                 notification_channel.to(`/notifications#${recp_adress}`).emit('notification', actionContent)
             }
