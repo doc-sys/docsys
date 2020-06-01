@@ -8,7 +8,7 @@
 		"type-check:watch": "npm run type-check -- --watch",
 		"build": "npm run build:js",
 		"build:types": "tsc --emitDeclarationOnly",
-		"build:js": "babel src --out-dir lib --extensions \".ts,.tsx,.js\" --source-maps inline --copy-files",
+    "build:js": "babel src --out-dir lib --extensions \".ts,.tsx,.js\" --source-maps inline --copy-files",
 		"test": "nyc --reporter=text mocha -r ts-node/register ./tests --timeout 10000 --exit",
 		"run": "nodemon",
 		"eslint:github-action": "eslint src/"
@@ -16,8 +16,6 @@
 	"dependencies": {
 		"@azure/storage-blob": "^12.1.1",
 		"@google-cloud/storage": "^4.7.0",
-		"@types/socket.io": "^2.1.4",
-		"@types/ws": "^7.2.4",
 		"archiver": "^3.1.1",
 		"aws-sdk": "^2.610.0",
 		"bcryptjs": "^2.4.3",
@@ -43,9 +41,7 @@
 		"node-rake": "^1.0.1",
 		"redis-status": "^1.0.3",
 		"sharp": "^0.24.1",
-		"socket.io": "^2.3.0",
-		"uuid": "^3.4.0",
-		"ws": "^7.2.5"
+		"uuid": "^3.4.0"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.8.4",
