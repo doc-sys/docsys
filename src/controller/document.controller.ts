@@ -1,12 +1,15 @@
-import express, { Request, Response, NextFunction } from "express"
+import { Request, Response, NextFunction } from "express"
 import { fromBuffer as filetypeFromBuffer } from 'file-type'
 import { PassThrough } from 'stream'
-import * as archive from 'archiver'
+import { notification_channel } from '../socket'
+import { socketStore } from '../lib/helpers/keystore'
+// import * as queue from 'doshit'
 
 import { ErrorHandler } from '../lib/helpers/error'
 import getStorage from '../lib/storage/adapters'
 
 const storage = getStorage()
+// const queue_client = queue()
 
 import { File } from '../models/file'
 import { v4 as uuid } from 'uuid';
@@ -49,6 +52,16 @@ export const getAllFiles = async (req: Request, res: Response, next: NextFunctio
     next()
 }
 
+export const getRecent = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.locals.recent = await File.find({ '$or': [{ owner: res.locals.auth_user._id }, { sharedWith: { '$in': [res.locals.auth_user._id] } }] }).populate({ path: 'log.user', select: 'user.settings.displayName user.avatar', options: { limit: 1 } }).limit(3)/* .sort('-log.timestamp').slice('log', -2).lean().select('title log').limit(req.query.limit || 3) */
+    } catch (error) {
+        return next(new ErrorHandler(500, `Error getting recent: ${(error as Error).message}`))
+    }
+
+    next()
+}
+
 export const getSingleFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
         res.locals.file = await File.findOne({ fileId: req.params.fileid })
@@ -56,6 +69,8 @@ export const getSingleFile = async (req: Request, res: Response, next: NextFunct
             .populate('lockedBy')
             .populate('sharedWith')
             .populate('log.user')
+
+        notification_channel.to(res.locals.auth_user.username).emit('notification', 'Getting file')
     } catch (error) {
         return next(new ErrorHandler(500, `Error getting file: ${(error as Error).message}`))
     }
@@ -83,6 +98,15 @@ export const createNewFile = async (req: Request, res: Response, next: NextFunct
         let file = new File(req.body)
         file.owner = res.locals.auth_user._id
         file.fileId = fileid
+        file.log.push({
+            user: res.locals.auth_user._id,
+            message: 'created this file'
+        })
+        file.log.push({
+            user: res.locals.auth_user._id,
+            logType: 'commented',
+            message: req.body.comment
+        })
         res.locals.file = await file.save()
     } catch (error) {
         return next(new ErrorHandler(500, `Error creating document: ${(error as Error).message}`))
@@ -113,10 +137,30 @@ export const uploadFiles = async (req: Request, res: Response, next: NextFunctio
     next()
 }
 
+export const appendComment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.locals.file.log.push({
+            user: res.locals.auth_user,
+            message: req.body.comment,
+            logType: 'commented'
+        })
+        await res.locals.file.save()
+        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], `${res.locals.auth_user.settings.displayName} commented on ${res.locals.file.title}`, (res.locals.auth_user.username as String))
+    } catch (error) {
+        return next(new ErrorHandler(500, `Error locking file: ${(error as Error).message}`))
+    }
+
+    next()
+}
+
 // Lock Operations
 
 export const checkPermissionToFile = async (req: Request, res: Response, next: NextFunction) => {
-    if (!(res.locals.auth_user.username == res.locals.file.owner.username || res.locals.file.sharedWith.includes(res.locals.auth_user)) || res.locals.file.locked) return next(new ErrorHandler(401, "File can't be checked out by you"))
+    let permitted = false
+
+    res.locals.file.sharedWith.filter(e => e.username === res.locals.auth_user.username).length > 0 ? permitted = true : permitted = false
+
+    if (!(res.locals.auth_user.username == res.locals.file.owner.username || permitted)) return next(new ErrorHandler(401, "File can't be checked out by you"))
     next()
 }
 
@@ -162,6 +206,7 @@ export const downloadFile = async (req: Request, res: Response, next: NextFuncti
         // )
 
         // res.locals.zip = zip
+        if (res.locals.file.archived) throw new Error('File is archived')
 
         res.locals.fileBuffer = await storage.get(res.locals.file.fileStorageId)
     } catch (error) {
@@ -175,13 +220,57 @@ export const downloadFile = async (req: Request, res: Response, next: NextFuncti
 
 export const shareFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let userToShare = req.body.userToShare || req.query.userToShare
-        res.locals.file.sharedWith.push(userToShare._id)
+        let userToShare = req.body.whoToShare || req.query.userToShare
+        res.locals.file.sharedWith.push(userToShare)
 
         await res.locals.file.save()
+
+        res.locals.file = await File.findOne({ fileId: res.locals.file.fileId })
+            .populate('owner')
+            .populate('sharedWith')
+
+        console.log(res.locals.file)
+
+        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], `${res.locals.auth_user.settings.displayName} shared ${res.locals.file.title} with you`, (res.locals.auth_user.username as String))
+
     } catch (error) {
         return next(new ErrorHandler(500, `Error sharing file: ${(error as Error).message}`))
     }
 
     next()
+}
+
+export const archiveFile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await storage.archive(res.locals.file.fileStorageId)
+        res.locals.file.archived = true
+        res.locals.file = await res.locals.file.save()
+    } catch (error) {
+        return next(new ErrorHandler(500, `Error archiving file: ${(error as Error).message}`))
+    }
+
+    next()
+}
+
+export const handleQueue = async (req: Request, res: Response, next: NextFunction) => {
+    switch (req.params.queue) {
+        case "ocr":
+
+    }
+}
+
+// HELPER FUNCTION
+// ---------------
+
+async function emitNotification(recps: [String], actionContent: String, emitter: String) {
+    for (let recp of recps) {
+        if (recp !== emitter) {
+            console.log(recp)
+            let recp_adress: String = await socketStore.get(recp)
+            console.log(recp_adress)
+            if (recp_adress) {
+                notification_channel.to(`/notifications#${recp_adress}`).emit('notification', actionContent)
+            }
+        }
+    }
 }

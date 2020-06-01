@@ -1,31 +1,48 @@
 const sio = require('socket.io')
+import * as jwt from 'jsonwebtoken'
+import { socketStore } from './lib/helpers/keystore';
+import { Namespace, Socket } from 'socket.io';
 
+const io: SocketIO.Server = new sio()
 
-const io = new sio({
-    serveClient: false,
-    path: '/socket.io'
-})
-
+// Permit all origins
 io.origins((o, cb) => {
     cb(null, true)
 })
 
-io.use((socket, next) => {
+// Verify token on request handshake
+io.use(async (socket: Socket, next) => {
     let token = socket.handshake.query.token
     if (token) {
-        socket.token = token
-        return next()
+        try {
+            let user = await jwt.verify(token, process.env.JWT_SECRET)
+            socket.username = user.username
+            return next()
+        } catch {
+            return next(new Error('Auth failed'))
+        }
     }
     return next(new Error('Auth not valid'))
 })
 
-const notification_channel = io.of('/notifications')
-const message_channel = io.of('/message')
+// Export namespaces for messaging and notifications
+export const notification_channel: Namespace = io.of('/notifications')
+export const message_channel: Namespace = io.of('/message')
 
-io.on('connection', (socket) => {
-    //update socket id with username and online status
+// Update key/value store holding socket IDs on connect/disconnect
+io.on('connection', async (socket) => {
+    await socketStore.set(socket.username, socket.id)
 })
 
+io.on('disconnect', async (socket) => {
+    await socketStore.delete(socket.username)
+})
+
+// notification_channel.on('connection', (socket) => {
+//     notification_channel.to(socket.id).emit('notification', 'YOU CONECTED')
+// })
+
+// Distribute messages
 message_channel.on('connection', (socket) => {
     console.log(socket.token)
 

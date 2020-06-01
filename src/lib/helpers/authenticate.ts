@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 //DEPS
 import * as jwt from 'jsonwebtoken'
 var { ErrorHandler } = require('./error')
+import { user } from '../..//models/user'
 
 export default async function authenticate(req: any, res: Response, next: NextFunction) {
     try {
@@ -16,8 +17,9 @@ export default async function authenticate(req: any, res: Response, next: NextFu
 
         let result = await jwt.verify(token, process.env.JWT_SECRET)
 
-        res.locals.auth_user = result
+        let fullUser = await user.findOne({ username: result.username })
 
+        res.locals.auth_user = fullUser
         next()
     } catch (error) {
         return next(new ErrorHandler(500, `Error checking permission: ${(error as Error).message}`))
