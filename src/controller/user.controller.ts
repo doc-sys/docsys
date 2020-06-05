@@ -27,7 +27,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
 
     try {
         var token = await jwt.sign(cleanResult, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRES,
+            expiresIn: process.env.JWT_EXPIRES_IN,
         })
     } catch (error) {
         return next(new ErrorHandler(501, `Error token signing: ${error.message}`))
