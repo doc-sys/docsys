@@ -31,16 +31,17 @@ export const message_channel: Namespace = io.of('/message')
 
 // Update key/value store holding socket IDs on connect/disconnect
 io.on('connection', async (socket) => {
-    await socketStore.set(socket.username, socket.id)
-})
+    socket.on('disconnect', async () => {
+        console.log(`removing ${socket.username} from redis`)
+        await socketStore.delete(socket.username)
+    })
 
-io.on('disconnect', async (socket) => {
-    await socketStore.delete(socket.username)
-})
+    if (!await socketStore.get(socket.username)) {
+        console.log(`adding to redis: ${socket.username} with ${socket.id}`)
+        await socketStore.set(socket.username, socket.id)
+    }
 
-// notification_channel.on('connection', (socket) => {
-//     notification_channel.to(socket.id).emit('notification', 'YOU CONECTED')
-// })
+})
 
 // Distribute messages
 message_channel.on('connection', (socket) => {
