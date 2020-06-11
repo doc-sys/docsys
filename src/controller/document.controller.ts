@@ -13,6 +13,7 @@ const storage = getStorage()
 
 import { File } from '../models/file'
 import { v4 as uuid } from 'uuid';
+import { Bool } from "aws-sdk/clients/clouddirectory"
 
 //Model Find Operations
 export const getOwnFiles = async (req: Request, res: Response, next: NextFunction) => {
@@ -145,7 +146,12 @@ export const appendComment = async (req: Request, res: Response, next: NextFunct
             logType: 'commented'
         })
         await res.locals.file.save()
-        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], `${res.locals.auth_user.settings.displayName} commented on ${res.locals.file.title}`, (res.locals.auth_user.username as String))
+        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], actionContext.log, {
+            notificationTemplate: [`${res.locals.auth_user.settings.displayName}`, 'commented on', `${res.locals.file.title}`],
+            payload: res.locals.file.log,
+            playNotification: true,
+            actionAttentionURL: `/view/${res.locals.file.fileId}`
+        }, (res.locals.auth_user.username as String))
     } catch (error) {
         return next(new ErrorHandler(500, `Error locking file: ${(error as Error).message}`))
     }
@@ -231,7 +237,11 @@ export const shareFile = async (req: Request, res: Response, next: NextFunction)
 
         console.log(res.locals.file)
 
-        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], `${res.locals.auth_user.settings.displayName} shared ${res.locals.file.title} with you`, (res.locals.auth_user.username as String))
+        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], actionContext.share, {
+            textTemplate: [`${res.locals.auth_user.settings.displayName}`, 'shared', `${res.locals.file.title}`, 'with you'],
+            playNotification: true,
+            actionAttentionURL: `/view/${res.locals.file.fileId}`
+        }, (res.locals.auth_user.username as String))
 
     } catch (error) {
         return next(new ErrorHandler(500, `Error sharing file: ${(error as Error).message}`))
@@ -261,15 +271,27 @@ export const handleQueue = async (req: Request, res: Response, next: NextFunctio
 
 // HELPER FUNCTION
 // ---------------
+interface actionDataIf {
+    payload?: any,
+    notificationTemplate: Array<String>,
+    playNotification?: Bool,
+    actionAttentionURL?: String
+}
 
-async function emitNotification(recps: [String], actionContent: String, emitter: String) {
+enum actionContext {
+    log = 'log',
+    share = 'share'
+}
+
+async function emitNotification(recps: [String], actionContext: actionContext, actionData: actionDataIf, emitter: String) {
     for (let recp of recps) {
         if (recp !== emitter) {
-            console.log(recp)
             let recp_adress: String = await socketStore.get(recp)
-            console.log(recp_adress)
             if (recp_adress) {
-                notification_channel.to(`/notifications#${recp_adress}`).emit('notification', actionContent)
+                notification_channel.to(`/notifications#${recp_adress}`).emit('notification', {
+                    type: actionContext,
+                    payload: actionData
+                })
             }
         }
     }
