@@ -70,8 +70,7 @@ export const getSingleFile = async (req: Request, res: Response, next: NextFunct
             .populate('lockedBy')
             .populate('sharedWith')
             .populate('log.user')
-
-        notification_channel.to(res.locals.auth_user.username).emit('notification', 'Getting file')
+            .sort('')
     } catch (error) {
         return next(new ErrorHandler(500, `Error getting file: ${(error as Error).message}`))
     }
@@ -288,7 +287,8 @@ async function emitNotification(recps: [String], actionContext: actionContext, a
         if (recp !== emitter) {
             let recp_adress: String = await socketStore.get(recp)
             if (recp_adress) {
-                notification_channel.to(`/notifications#${recp_adress}`).emit('notification', {
+                console.log(`emitting to ${recp_adress}`)
+                notification_channel.to(`/api/notifications#${recp_adress}`).emit('notification', {
                     type: actionContext,
                     payload: actionData
                 })

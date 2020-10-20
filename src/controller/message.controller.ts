@@ -44,7 +44,8 @@ export const getConversations = async (req: Request, res: Response, next: NextFu
 export const getConversationHistory = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const history = await conversation.find({ convoId: req.params.convoid || req.body.convoid }).populate('messages.from').sort([['messages.timestamp', 1]]).select('messages convoId').exec()
-        res.locals.history = history
+        console.log(history)
+        res.locals.history = history[0]
     } catch (error) {
         return next(new ErrorHandler(500, `Error creating conversation: ${(error as Error).message}`))
     }
