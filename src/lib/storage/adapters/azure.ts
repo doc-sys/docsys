@@ -2,6 +2,7 @@ import { ReadStream, WriteStream } from 'fs'
 import StorageAdapter from './interface'
 import { BlobServiceClient, StorageSharedKeyCredential, ContainerClient } from '@azure/storage-blob'
 import { v4 as uuid } from 'uuid'
+import { error } from 'console'
 
 export default class AzureStorage implements StorageAdapter {
     private client: BlobServiceClient
@@ -32,12 +33,17 @@ export default class AzureStorage implements StorageAdapter {
         })
     }
 
-    async get(id: string, stream: WriteStream): Promise<void> {
+    async get(id: string): Promise<Buffer> {
         return new Promise(async (resolve, reject) => {
             let blobClient = await this.bucket.getBlockBlobClient(id)
             let downloadResponse = await blobClient.download()
 
-            downloadResponse.readableStreamBody?.pipe(stream).on('error', (error) => reject(error)).on('finish', () => resolve())
+            let chunks: [any];
+
+            let stream = downloadResponse.readableStreamBody
+            stream?.on("data", (chunk) => chunks.push(chunk))
+            stream?.on("end", () => resolve(Buffer.concat(chunks)))
+            stream?.on("error", (error) => reject(error))
         })
     }
 

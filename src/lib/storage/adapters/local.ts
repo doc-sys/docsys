@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { v4 as uuid } from 'uuid'
-import { ReadStream, WriteStream } from 'fs';
+import { ReadStream } from 'fs';
 import StorageAdapter from './interface';
 
 export default class Local implements StorageAdapter {
@@ -21,10 +21,12 @@ export default class Local implements StorageAdapter {
         })
     }
 
-    async get(id: string, stream: WriteStream): Promise<void> {
+    async get(id: string): Promise<Buffer> {
         return new Promise((resolve, reject) => {
-            let rStream = fs.createReadStream(path.join('./', this.path, id))
-            rStream.pipe(stream).on('error', (error) => reject(error)).on('finish', () => resolve())
+            fs.readFile(path.join('./', this.path, id), (error, data) => {
+                if (error) reject(error)
+                resolve(data)
+            })
         })
     }
 

@@ -1,10 +1,12 @@
+/* eslint-disable no-console */
 /**
  * Module dependencies.
  */
 
-var app = require('./app')
-var debug = require('debug')('docsys:server')
-var http = require('http')
+import app from './app';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const debug = require('debug')('docsys:server')
+import http from 'http';
 
 import io from './socket';
 
@@ -12,14 +14,14 @@ import io from './socket';
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3001')
+const port = normalizePort(process.env.PORT || '3001')
 app.set('port', port)
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app)
+const server = http.createServer(app)
 
 // /**
 //  * Create WebSocket server
@@ -39,8 +41,8 @@ server.on('listening', onListening)
  * Normalize a port into a number, string, or false.
  */
 
-function normalizePort(val: any) {
-	var port = parseInt(val, 10)
+function normalizePort(val: number | string) {
+	const port = parseInt(val as string, 10)
 
 
 	if (isNaN(port)) {
@@ -60,12 +62,12 @@ function normalizePort(val: any) {
  * Event listener for HTTP server "error" event.
  */
 
-function onError(error: any) {
+function onError(error) {
 	if (error.syscall !== 'listen') {
 		throw error
 	}
 
-	var bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port
+	const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port
 
 	// handle specific listen errors with friendly messages
 	switch (error.code) {
@@ -87,7 +89,8 @@ function onError(error: any) {
  */
 
 function onListening() {
-	var addr = server.address()
-	var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const addr: any = server.address()
+	const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port
 	debug('Listening on ' + bind)
 }

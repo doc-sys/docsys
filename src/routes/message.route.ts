@@ -1,5 +1,5 @@
-let express = require('express')
-import { checkSchema } from 'express-validator'
+import express from 'express';
+import { checkSchema, ParamSchema } from 'express-validator'
 import authenticate from '../lib/helpers/authenticate'
 import { checkSchemaValidation } from '../lib/helpers/validator'
 
@@ -8,7 +8,7 @@ import { createNewConversation, getConversations, getConversationHistory } from 
 import * as initiate from '../lib/requestSchemas/message.initiateConvo.json'
 import * as getHistory from '../lib/requestSchemas/message.getHistory.json'
 
-let router = express.Router()
+const router = express.Router()
 
 router.route('/')
     /**
@@ -31,7 +31,7 @@ router.route('/')
      * @apiSuccess {String} convoId The conversation id
      * @apiError (401) {String} AuthentificationError Not allowed to access ressource
      */
-    .post([authenticate, checkSchema(initiate), checkSchemaValidation, createNewConversation], (req, res) => {
+    .post([authenticate, checkSchema(initiate as Record<string, ParamSchema>) as never, checkSchemaValidation, createNewConversation], (req, res) => {
         res.status(200).json(res.locals.conversationId)
     })
 
@@ -44,8 +44,8 @@ router.route('/:convoid')
      * @apiSuccess {Array} messages All messages in that conversation already ordered
      * @apiError (401) {String} AuthentificationError Not allowed to access ressource
      */
-    .get([authenticate, checkSchema(getHistory), checkSchemaValidation, getConversationHistory], (req, res) => {
+    .get([authenticate, checkSchema(getHistory as Record<string, ParamSchema>) as never, checkSchemaValidation, getConversationHistory], (req, res) => {
         res.status(200).json(res.locals.history)
     })
 
-module.exports = router
+export default router

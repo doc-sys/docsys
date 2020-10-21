@@ -1,28 +1,28 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import { handleError, ErrorHandler } from './lib/helpers/error';
 
-var express = require('express')
-var path = require('path')
-var logger = require('morgan')
+import express from 'express';
+import path from 'path';
+import logger from 'morgan';
 
 // eslint-disable-next-line no-unused-vars
-var compression = require('compression')
+import compression from 'compression';
 // eslint-disable-next-line no-unused-vars
-var helmet = require('helmet')
-var mongoose = require('mongoose')
-var fs = require('fs')
-var jwt = require('jsonwebtoken')
-var cors = require('cors')
+import helmet from 'helmet';
+import mongoose from 'mongoose';
+import fs from 'fs';
+import cors from 'cors';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv-defaults').config()
 
-var indexRouter = require('./routes/index.route')
-var usersRouter = require('./routes/user.route')
-var docRouter = require('./routes/document.route')
-var messageRouter = require('./routes/message.route')
+import indexRouter from './routes/index.route';
+import usersRouter from './routes/user.route';
+import docRouter from './routes/document.route';
+import messageRouter from './routes/message.route';
 
 
-var app = express()
+const app = express()
 
 try {
 	mongoose.connect(
@@ -36,6 +36,7 @@ try {
 		}
 	)
 } catch (error) {
+	// eslint-disable-next-line no-console
 	console.error(error.message)
 	process.exit(1)
 }
@@ -83,8 +84,7 @@ app.use('/', indexRouter)
 
 // error handler
 // eslint-disable-next-line no-unused-vars
-app.use(function (err: ErrorHandler, req: Request, res: Response, next: NextFunction) {
-	console.error(err)
+app.use(function (err: ErrorHandler, req: Request, res: Response) {
 	handleError(err, res)
 })
 
@@ -92,4 +92,4 @@ app.use((req, res) => {
 	res.status(404).json({ error: 'Route not found' })
 })
 
-module.exports = app
+export default app
