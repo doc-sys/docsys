@@ -1,5 +1,5 @@
-var express = require('express')
-var router = express.Router()
+import express from 'express';
+const router = express.Router()
 
 import { checkMongoDBHealth, checkRedisHealth } from '../controller/index.controller';
 
@@ -15,4 +15,4 @@ router.route('/').get([checkMongoDBHealth, checkRedisHealth], (req, res) => {
 	res.status(200).json(res.locals.health)
 })
 
-module.exports = router
+export default router

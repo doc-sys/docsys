@@ -1,12 +1,13 @@
-const sio = require('socket.io')
+import sio from 'socket.io'
 import * as jwt from 'jsonwebtoken'
 import { socketStore } from './lib/helpers/keystore'
-import { Namespace, Socket } from 'socket.io'
+import { Namespace } from 'socket.io'
+import IPopulatedSocket from './lib/interfaces/socket'
 
 import { conversation } from './models/conversation'
 import { user } from './models/user'
 
-const io: SocketIO.Server = new sio()
+const io: SocketIO.Server = sio()
 
 // Permit all origins
 io.origins((o, cb) => {
@@ -14,11 +15,11 @@ io.origins((o, cb) => {
 })
 
 // Verify token on request handshake
-io.use(async (socket: Socket, next) => {
-    let token = socket.handshake.query.token
+io.use(async (socket: IPopulatedSocket, next) => {
+    const token = socket.handshake.query.token
     if (token) {
         try {
-            let user = await jwt.verify(token, process.env.JWT_SECRET)
+            const user = await jwt.verify(token, process.env.JWT_SECRET)
             socket.username = user.username
             return next()
         } catch {
@@ -33,11 +34,11 @@ export const notification_channel: Namespace = io.of('/api/notifications')
 export const message_channel: Namespace = io.of('/api/message')
 
 // Auth for each namespace
-notification_channel.use(async (socket: Socket, next) => {
-    let token = socket.handshake.query.token
+notification_channel.use(async (socket: IPopulatedSocket, next) => {
+    const token = socket.handshake.query.token
     if (token) {
         try {
-            let user = await jwt.verify(token, process.env.JWT_SECRET)
+            const user = await jwt.verify(token, process.env.JWT_SECRET)
             socket.username = user.username
             return next()
         } catch {
@@ -47,11 +48,11 @@ notification_channel.use(async (socket: Socket, next) => {
     return next(new Error('Auth not valid'))
 })
 
-message_channel.use(async (socket: Socket, next) => {
-    let token = socket.handshake.query.token
+message_channel.use(async (socket: IPopulatedSocket, next) => {
+    const token = socket.handshake.query.token
     if (token) {
         try {
-            let user = await jwt.verify(token, process.env.JWT_SECRET)
+            const user = await jwt.verify(token, process.env.JWT_SECRET)
             socket.username = user.username
             socket._id = user._id
             return next()
@@ -63,25 +64,25 @@ message_channel.use(async (socket: Socket, next) => {
 })
 
 // Update key/value store holding socket IDs on connect/disconnect
-io.on('connection', async (socket) => {
+io.on('connection', async (socket: IPopulatedSocket) => {
     socket.on('disconnect', async () => {
-        console.log(`removing ${socket.username} from redis`)
+        //TODO: logging console.log(`removing ${socket.username} from redis`)
         await socketStore.delete(socket.username)
     })
 
     if (!await socketStore.get(socket.username)) {
-        console.log(`adding to redis: ${socket.username} with ${socket.id}`)
+        //TODO: logging console.log(`adding to redis: ${socket.username} with ${socket.id}`)
         await socketStore.set(socket.username, socket.id)
     }
 })
 
-notification_channel.on('connection', (socket) => {
-    console.log(`${socket.username} connected to notification channel`)
+notification_channel.on('connection', () => {
+    //TODO: logging console.log(`${socket.username} connected to notification channel`)
 })
 
 // Distribute messages
-message_channel.on('connection', (socket) => {
-    console.log(`${socket.username} connected to message channel`)
+message_channel.on('connection', (socket: IPopulatedSocket) => {
+    //TODO: logging console.log(`${socket.username} connected to message channel`)
 
     //Handle convo join
     socket.on('join', (data) => {
@@ -92,8 +93,8 @@ message_channel.on('connection', (socket) => {
     socket.on('message', async (type, data) => {
         //save in db
         //emit to other recps
-        let convo = await conversation.findOne({ convoId: data.convoId }).populate('participants')
-        let us = await user.findOne({ _id: socket._id })
+        const convo = await conversation.findOne({ convoId: data.convoId }).populate('participants')
+        const us = await user.findOne({ _id: socket._id })
         delete us.password, us.loginAttempts, us.lockUntil
 
         convo.messages.push({
@@ -103,10 +104,10 @@ message_channel.on('connection', (socket) => {
         })
         await convo.save()
 
-        let payload = convo.messages[convo.messages.length - 1]
+        const payload = convo.messages[convo.messages.length - 1]
         payload.from = us
 
-        await emitMessage([...convo.participants.map(e => e.username as String)], {
+        await emitMessage([...convo.participants.map(e => e.username) as [string]], {
             payload: payload,
             convoId: data.convoId
         })
@@ -119,16 +120,16 @@ message_channel.on('connection', (socket) => {
 })
 
 interface messageIf {
-    payload: any,
-    convoId: String
+    payload: Record<string, unknown>,
+    convoId: string
 }
 
 // helper function
-async function emitMessage(recps: [String], message: messageIf) {
-    for (let recp of recps) {
-        let recp_adress: String = await socketStore.get(recp)
+async function emitMessage(recps: [string], message: messageIf) {
+    for (const recp of recps) {
+        const recp_adress: string = await socketStore.get(recp)
         if (recp_adress) {
-            console.log(`emitting to ${recp_adress}`)
+            //TODO: logging console.log(`emitting to ${recp_adress}`)
             message_channel.to(`/api/message#${recp_adress}`).emit('message', message)
         }
     }

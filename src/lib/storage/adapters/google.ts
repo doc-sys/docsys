@@ -32,7 +32,7 @@ export default class GoogleStorage implements StorageAdapter {
         })
     }
 
-    async get(id: string, stream: WriteStream): Promise<void> {
+    async get(id: string): Promise<Buffer> {
         return new Promise((resolve, reject) => {
             this.client.bucket(this.bucket_name).file(id).createReadStream()
                 .on('error', (error: any) => reject(error))

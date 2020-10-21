@@ -1,10 +1,9 @@
-import express, { Request, Response, NextFunction } from "express"
-import { checkSchema } from 'express-validator'
-const multer = require('multer')
-import { Readable } from "stream"
+import express from "express"
+import { checkSchema, ParamSchema } from 'express-validator'
+import multer from 'multer';
 
 import authenticate, { requireAdmin } from '../lib/helpers/authenticate'
-import { getAllFiles, createNewFile, getRecent, uploadFiles, getOwnFiles, getSharedFiles, checkPermissionToFile, lockFile, getSingleFile, downloadFile, unlockFile, shareFile, checkFileOwnership, deleteSingleFile, appendComment, archiveFile } from '../controller/document.controller';
+import { getAllFiles, createNewFile, getRecent, uploadFiles, getOwnFiles, getSharedFiles, checkPermissionToFile, getSingleFile, downloadFile, unlockFile, shareFile, deleteSingleFile, appendComment, archiveFile } from '../controller/document.controller';
 
 import createNew from '../lib/requestSchemas/document.createNew.json'
 import checkout from '../lib/requestSchemas/document.checkout.json'
@@ -12,8 +11,8 @@ import share from '../lib/requestSchemas/document.share.json'
 import fileid from '../lib/requestSchemas/document.fileid.json'
 import { checkSchemaValidation } from '../lib/helpers/validator';
 
-let router = express.Router()
-let uploadFileHandler = multer({
+const router = express.Router()
+const uploadFileHandler = multer({
     storage: multer.memoryStorage()
 })
 
@@ -43,7 +42,7 @@ router.route('/')
     * @apiError (415) {String} FileTypeError Filetype is not supported. So far only PDFs and picture types are supported
     * @apiError (500) {String} InternalError Something went wrong
     */
-    .post([authenticate, uploadFileHandler.single('documents'), checkSchema(createNew as any), checkSchemaValidation, createNewFile, uploadFiles], (req, res) => {
+    .post([authenticate, uploadFileHandler.single('documents'), checkSchema(createNew as Record<string, ParamSchema>), checkSchemaValidation, createNewFile, uploadFiles], (req, res) => {
         res.status(200).json({ document: res.locals.file })
     })
 
@@ -99,7 +98,7 @@ router.route('/comment/:fileid')
      * @apiError (401) {String} PermissionError Not allowed to POST a comment
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .post([authenticate, checkSchema(fileid), checkSchemaValidation, getSingleFile, checkPermissionToFile, appendComment], (req, res) => {
+    .post([authenticate, checkSchema(fileid as Record<string, ParamSchema>) as never, checkSchemaValidation, getSingleFile, checkPermissionToFile, appendComment], (req, res) => {
         res.status(200).json(res.locals.file.log)
     })
 
@@ -114,7 +113,7 @@ router.route('/checkout/:fileid')
      * @apiError (401) PermissionError Not allowed to GET this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .get([authenticate, checkSchema(checkout), checkSchemaValidation, getSingleFile, checkPermissionToFile, /* lockFile ,*/ downloadFile], (req, res) => {
+    .get([authenticate, checkSchema(checkout as Record<string, ParamSchema>) as never, checkSchemaValidation, getSingleFile, checkPermissionToFile, /* lockFile ,*/ downloadFile], (req, res) => {
         res.writeHead(200, {
             'Content-Type': res.locals.file.mime,
             'Content-disposition': `attachment; filename=${res.locals.file.title}`, //.${res.locals.file.extension}
@@ -140,7 +139,7 @@ router.route('/checkout/:fileid')
     * @apiError (401) PermissionError Not allowed to UNLOCK this file
     * @apiError (500) {String} InternalError Something went wrong
     */
-    .unlock([authenticate, requireAdmin, checkSchema(checkout), checkSchemaValidation, getSingleFile, unlockFile], (req, res) => {
+    .unlock([authenticate, requireAdmin, checkSchema(checkout as Record<string, ParamSchema>) as never, checkSchemaValidation, getSingleFile, unlockFile], (req, res) => {
         res.status(200).json({ doc: res.locals.file })
     })
 
@@ -156,7 +155,7 @@ router.route('/share/:fileid')
      * @apiError (401) PermissionError Not allowed to edit this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .post([authenticate, checkSchema(share), checkSchemaValidation, getSingleFile, checkPermissionToFile, shareFile], (req, res) => {
+    .post([authenticate, checkSchema(share as Record<string, ParamSchema>) as never, checkSchemaValidation, getSingleFile, checkPermissionToFile, shareFile], (req, res) => {
         res.status(200).json({ doc: res.locals.file })
     })
 
@@ -171,7 +170,7 @@ router.route('/archive/:fileid')
      * @apiError (401) PermissionError Not allowed to archive this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .post([authenticate, checkSchema(fileid), checkSchemaValidation, getSingleFile, checkPermissionToFile, archiveFile], (req, res) => {
+    .post([authenticate, checkSchema(fileid as Record<string, ParamSchema>) as never, checkSchemaValidation, getSingleFile, checkPermissionToFile, archiveFile], (req, res) => {
         res.status(200).json({ file: res.locals.file })
     })
 
@@ -189,7 +188,7 @@ router.route('/:fileid')
      * @apiError (401) {String} PermissionError Not allowed to GET this file
      * @apiError (500) {String} InternalError Something went wrong
      */
-    .get([authenticate, checkSchema(fileid), checkSchemaValidation, getSingleFile, checkPermissionToFile], (req, res) => {
+    .get([authenticate, checkSchema(fileid as Record<string, ParamSchema>) as never, checkSchemaValidation, getSingleFile, checkPermissionToFile], (req, res) => {
         res.status(200).json({ doc: res.locals.file })
     })
     /**
@@ -202,8 +201,8 @@ router.route('/:fileid')
     * @apiError (401) {String} PermissionError Not allowed to DELETE this file
     * @apiError (500) {String} InternalError Something went wrong
     */
-    .delete([authenticate, checkSchema(fileid), checkSchemaValidation, deleteSingleFile], (req, res) => {
+    .delete([authenticate, checkSchema(fileid as Record<string, ParamSchema>) as never, checkSchemaValidation, deleteSingleFile], (req, res) => {
         res.status(200).json({ doc: res.locals.file })
     })
 
-module.exports = router
+export default router

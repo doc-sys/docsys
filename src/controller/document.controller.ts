@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Request, Response, NextFunction } from "express"
 import { fromBuffer as filetypeFromBuffer } from 'file-type'
 import { PassThrough } from 'stream'
@@ -20,7 +21,7 @@ export const getOwnFiles = async (req: Request, res: Response, next: NextFunctio
     if (!res.locals.auth_user) return next(new ErrorHandler(500, "Can't access user property"))
 
     try {
-        let files = await File.find({ owner: res.locals.auth_user._id }).sort(req.body.sorted || req.query.sorted || '-dated').populate('owner').select('title dated fileId locked extension owner.settings.displayName owner.avatar')
+        const files = await File.find({ owner: res.locals.auth_user._id }).sort(req.body.sorted || req.query.sorted || '-dated').populate('owner').select('title dated fileId locked extension owner.settings.displayName owner.avatar')
         res.locals.files = files
     } catch (error) {
         return next(new ErrorHandler(500, (error as Error).message))
@@ -33,7 +34,7 @@ export const getSharedFiles = async (req: Request, res: Response, next: NextFunc
     if (!res.locals.auth_user) return next(new ErrorHandler(500, "Can't access user property"))
 
     try {
-        let files = await File.find({ sharedWith: res.locals.auth_user._id }).sort(req.body.sorted || req.query.sorted || '-dated').populate('owner').select('title dated fileId locked extension owner.username owner.avatar')
+        const files = await File.find({ sharedWith: res.locals.auth_user._id }).sort(req.body.sorted || req.query.sorted || '-dated').populate('owner').select('title dated fileId locked extension owner.username owner.avatar')
         res.locals.files = files
     } catch (error) {
         return next(new ErrorHandler(500, (error as Error).message))
@@ -44,7 +45,7 @@ export const getSharedFiles = async (req: Request, res: Response, next: NextFunc
 
 export const getAllFiles = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let allFiles = await File.find({}).populate('owner')
+        const allFiles = await File.find({}).populate('owner')
         res.locals.files = allFiles
     } catch (error) {
         return next(new ErrorHandler(500, `Error getting documents: ${(error as Error).message}`))
@@ -80,7 +81,7 @@ export const getSingleFile = async (req: Request, res: Response, next: NextFunct
 
 export const deleteSingleFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let fileId = req.params.fileid || req.body.fileid || req.query.fileid
+        const fileId = req.params.fileid || req.body.fileid || req.query.fileid
         res.locals.file = await File.findOneAndDelete({ fileId: fileId })
         await storage.delete(res.locals.file.fileStorageId)
     } catch (error) {
@@ -94,8 +95,8 @@ export const deleteSingleFile = async (req: Request, res: Response, next: NextFu
 
 export const createNewFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let fileid = uuid()
-        let file = new File(req.body)
+        const fileid = uuid()
+        const file = new File(req.body)
         file.owner = res.locals.auth_user._id
         file.fileId = fileid
         file.log.push({
@@ -115,14 +116,14 @@ export const createNewFile = async (req: Request, res: Response, next: NextFunct
     next()
 }
 
-export const uploadFiles = async (req: Request, res: Response, next: NextFunction) => {
+export const uploadFiles = async (req: Request & { file }, res: Response, next: NextFunction) => {
     try {
-        let filetype = await filetypeFromBuffer(req.file.buffer)
+        const filetype = await filetypeFromBuffer(req.file.buffer)
 
-        let bStream = new PassThrough()
+        const bStream = new PassThrough()
         bStream.end(req.file.buffer)
 
-        let storageId = await storage.add(bStream)
+        const storageId = await storage.add(bStream)
 
         res.locals.file.fileStorageId = storageId
         res.locals.file.mime = filetype?.mime
@@ -130,7 +131,7 @@ export const uploadFiles = async (req: Request, res: Response, next: NextFunctio
         res.locals.file.save()
         delete res.locals.file.fileStorageId
     } catch (error) {
-        console.error(error)
+        //TODO: logging console.error(error)
         return next(new ErrorHandler(500, `Error handling file upload: ${(error as Error).message}`))
     }
 
@@ -145,12 +146,12 @@ export const appendComment = async (req: Request, res: Response, next: NextFunct
             logType: 'commented'
         })
         await res.locals.file.save()
-        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], actionContext.log, {
+        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)] as [string], actionContext.log, {
             notificationTemplate: [`${res.locals.auth_user.settings.displayName}`, 'commented on', `${res.locals.file.title}`],
             payload: res.locals.file.log,
             playNotification: true,
             actionAttentionURL: `/view/${res.locals.file.fileId}`
-        }, (res.locals.auth_user.username as String))
+        }, (res.locals.auth_user.username as string))
     } catch (error) {
         return next(new ErrorHandler(500, `Error locking file: ${(error as Error).message}`))
     }
@@ -225,7 +226,7 @@ export const downloadFile = async (req: Request, res: Response, next: NextFuncti
 
 export const shareFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let userToShare = req.body.whoToShare || req.query.userToShare
+        const userToShare = req.body.whoToShare || req.query.userToShare
         res.locals.file.sharedWith.push(userToShare)
 
         await res.locals.file.save()
@@ -234,13 +235,13 @@ export const shareFile = async (req: Request, res: Response, next: NextFunction)
             .populate('owner')
             .populate('sharedWith')
 
-        console.log(res.locals.file)
+        //TODO: logging console.log(res.locals.file)
 
-        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)], actionContext.share, {
-            textTemplate: [`${res.locals.auth_user.settings.displayName}`, 'shared', `${res.locals.file.title}`, 'with you'],
+        await emitNotification([res.locals.file.owner.username, ...res.locals.file.sharedWith.map(e => e.username)] as [string], actionContext.share, {
+            notificationTemplate: [`${res.locals.auth_user.settings.displayName}`, 'shared', `${res.locals.file.title}`, 'with you'],
             playNotification: true,
             actionAttentionURL: `/view/${res.locals.file.fileId}`
-        }, (res.locals.auth_user.username as String))
+        }, (res.locals.auth_user.username as string))
 
     } catch (error) {
         return next(new ErrorHandler(500, `Error sharing file: ${(error as Error).message}`))
@@ -261,20 +262,20 @@ export const archiveFile = async (req: Request, res: Response, next: NextFunctio
     next()
 }
 
-export const handleQueue = async (req: Request, res: Response, next: NextFunction) => {
+/* export const handleQueue = async (req: Request, res: Response, next: NextFunction) => {
     switch (req.params.queue) {
         case "ocr":
 
     }
-}
+} */
 
 // HELPER FUNCTION
 // ---------------
 interface actionDataIf {
-    payload?: any,
-    notificationTemplate: Array<String>,
+    payload?: Record<string, unknown>,
+    notificationTemplate: Array<string>,
     playNotification?: Bool,
-    actionAttentionURL?: String
+    actionAttentionURL?: string
 }
 
 enum actionContext {
@@ -282,12 +283,12 @@ enum actionContext {
     share = 'share'
 }
 
-async function emitNotification(recps: [String], actionContext: actionContext, actionData: actionDataIf, emitter: String) {
-    for (let recp of recps) {
+async function emitNotification(recps: [string], actionContext: actionContext, actionData: actionDataIf, emitter: string) {
+    for (const recp of recps) {
         if (recp !== emitter) {
-            let recp_adress: String = await socketStore.get(recp)
+            const recp_adress: string = await socketStore.get(recp)
             if (recp_adress) {
-                console.log(`emitting to ${recp_adress}`)
+                //TODO: logging console.log(`emitting to ${recp_adress}`)
                 notification_channel.to(`/api/notifications#${recp_adress}`).emit('notification', {
                     type: actionContext,
                     payload: actionData

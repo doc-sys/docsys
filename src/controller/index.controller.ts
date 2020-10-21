@@ -1,4 +1,5 @@
-import express, { Request, Response, NextFunction } from "express"
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { Request, Response, NextFunction } from "express"
 import { ErrorHandler } from '../lib/helpers/error'
 
 import * as mongoose from 'mongoose'
@@ -14,14 +15,14 @@ export const checkMongoDBHealth = async (req: Request, res: Response, next: Next
     next()
 }
 
-export const checkStorageHealth = async (req: Request, res: Response, next: NextFunction) => {
+export const checkStorageHealth = async () => {
     //no idea how to implement this
 }
 
 export const checkRedisHealth = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let redisURI = new URL(process.env.REDIS_URI as string) || {}
-        let redis = redisStatus({
+        const redisURI = new URL(process.env.REDIS_URI as string) || {}
+        const redis = redisStatus({
             name: redisURI.pathname,
             port: redisURI.port,
             host: redisURI.hostname,

@@ -38,15 +38,15 @@ export default class GridFS implements StorageAdapter {
         })
     }
 
-    async get(id: string, stream: WriteStream): Promise<void> {
+    async get(id: string): Promise<Buffer> {
         await this.ready;
         const bucketStream: GridFSBucketReadStream = this.bucket.openDownloadStream(new ObjectId(id));
         return new Promise((resolve, reject) => {
-            bucketStream.pipe(stream).on('finish', () => {
-                resolve();
-            }).on('error', (error) => {
-                reject(error);
-            });
+            let chunks;
+
+            bucketStream.on("data", chunk => chunks.push(chunk))
+            bucketStream.on("end", () => resolve(Buffer.concat(chunks)))
+            bucketStream.on("error", error => reject(error))
         });
     }
 
