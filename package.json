@@ -44,7 +44,7 @@
 		"multer-s3": "^2.9.0",
 		"node-rake": "^1.0.1",
 		"redis-status": "^1.0.3",
-		"sharp": "^0.24.1",
+		"sharp": "^0.30.5",
 		"socket.io": "^2.4.0",
 		"uuid": "^3.4.0"
 	},
