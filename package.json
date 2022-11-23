@@ -45,7 +45,7 @@
 		"node-rake": "^1.0.1",
 		"redis-status": "^1.0.3",
 		"sharp": "^0.24.1",
-		"socket.io": "^2.4.0",
+		"socket.io": "^2.5.0",
 		"uuid": "^3.4.0"
 	},
 	"devDependencies": {
