@@ -28,7 +28,7 @@
 		"debug": "~2.6.9",
 		"dotenv": "^8.2.0",
 		"dotenv-defaults": "^1.1.1",
-		"express": "~4.16.1",
+		"express": "~4.17.3",
 		"express-validator": "^6.4.0",
 		"file-type": "^13.1.2",
 		"handlebars": "^4.7.7",
